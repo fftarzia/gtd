@@ -254,8 +254,6 @@ describe('PostgreSQL email notification outbox', () => {
 
     it('provides retry policy for monitoring', () => {
         expect(queue.MAX_ATTEMPTS).toBe(8);
-        expect(queue.RETRY_DELAYS_MIN).toEqual([
-            1, 5, 15, 30, 60, 120, 240,
-        ]);
+        expect(queue.RETRY_DELAYS_MIN).toEqual([1, 5, 15, 30, 60, 120, 240]);
     });
 });
