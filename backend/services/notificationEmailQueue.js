@@ -28,6 +28,7 @@ async function enqueue({
     userId,
     kind,
     sourceUid,
+    dedupKey = null,
     recipient,
     subject,
     text = null,
@@ -37,7 +38,7 @@ async function enqueue({
     if (!isEmailEnabled()) return null;
 
     const [delivery, created] = await NotificationEmailDelivery.findOrCreate({
-        where: { dedup_key: kind + ':' + sourceUid },
+        where: { dedup_key: dedupKey || kind + ':' + sourceUid },
         defaults: {
             user_id: userId,
             kind,
@@ -190,9 +191,16 @@ async function processDue({ now = new Date(), limit = 100 } = {}) {
     });
 
     let sent = 0;
-    for (const row of due) {
-        const delivery = await deliver(row.id, { now });
-        if (delivery?.status === 'sent') sent += 1;
+    // Bound concurrent SMTP connections and keep the scheduler responsive.
+    for (let i = 0; i < due.length; i += 5) {
+        const results = await Promise.allSettled(
+            due.slice(i, i + 5).map((row) => deliver(row.id, { now }))
+        );
+        sent += results.filter(
+            (result) =>
+                result.status === 'fulfilled' &&
+                result.value?.status === 'sent'
+        ).length;
     }
 
     const dayMs = 24 * 60 * 60 * 1000;

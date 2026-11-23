@@ -302,10 +302,33 @@ module.exports = (sequelize) => {
 
             const { renderEmail } = require('../emails');
             const { enqueue } = require('../services/notificationEmailQueue');
+            // Due/overdue jobs recreate unread notification rows every
+            // 15 minutes. Deduplicate by entity, event type and UTC day
+            // rather than by the transient notification row UID.
+            const repeatingTypes = [
+                'task_due_soon',
+                'task_overdue',
+                'project_due_soon',
+                'project_overdue',
+            ];
+            const entityUid =
+                notificationInstance.data?.taskUid ||
+                notificationInstance.data?.projectUid;
+            const dedupKey =
+                repeatingTypes.includes(notificationInstance.type) && entityUid
+                    ? [
+                          'notification',
+                          notificationInstance.user_id,
+                          notificationInstance.type,
+                          entityUid,
+                          new Date().toISOString().slice(0, 10),
+                      ].join(':')
+                    : null;
             await enqueue({
                 userId: notificationInstance.user_id,
                 kind: 'notification',
                 sourceUid: notificationInstance.uid,
+                dedupKey,
                 recipient: user.email,
                 ...renderEmail('notification', {
                     title: notificationInstance.title,

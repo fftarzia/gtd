@@ -96,6 +96,25 @@ describe('PostgreSQL email notification outbox', () => {
         });
     });
 
+    it('accepts an explicit deduplication key for recurring events', async () => {
+        await queue.enqueue({
+            userId: 42,
+            kind: 'notification',
+            sourceUid: 'ephemeral-uid',
+            dedupKey: 'notification:42:task_overdue:task1:2026-11-23',
+            recipient: 'user@example.test',
+            subject: 'Overdue',
+            text: 'Task overdue',
+        });
+        expect(NotificationEmailDelivery.findOrCreate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                where: {
+                    dedup_key: 'notification:42:task_overdue:task1:2026-11-23',
+                },
+            })
+        );
+    });
+
     it('waits for transaction commit before dispatching', async () => {
         const transaction = { afterCommit: jest.fn() };
         await queue.enqueue({

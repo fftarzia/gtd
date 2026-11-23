@@ -8,6 +8,8 @@ Apprise, external worker, or additional Portainer service is needed.
 
 - When email is enabled and the relevant per-event preference is enabled, a
   delivery is stored with a unique source key and the exact email content.
+  Recreated task/project due notifications are deduplicated by user, event,
+  entity UID and UTC date; other events use the notification's own UID.
 - An Inbox capture and its email outbox row are committed in the **same
   PostgreSQL transaction**. SMTP outages do not block a capture.
 - The app attempts to send newly committed emails promptly. The existing task
