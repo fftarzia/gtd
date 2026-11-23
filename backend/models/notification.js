@@ -309,7 +309,9 @@ module.exports = (sequelize) => {
                 to: user.email,
                 ...renderEmail('notification', {
                     title: notificationInstance.title,
-                    message: notificationInstance.message || notificationInstance.title,
+                    message:
+                        notificationInstance.message ||
+                        notificationInstance.title,
                 }),
             });
             if (result.success) {
