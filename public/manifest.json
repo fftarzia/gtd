@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "tududi",
-  "short_name": "tududi",
-  "description": "A simple and effective task management application",
+  "name": "GTDdo",
+  "short_name": "GTDdo",
+  "description": "GTDdo: GTD-inspired task and project management, based on tududi.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -20,6 +20,12 @@
     }
   },
   "icons": [
+    {
+      "src": "/gtddo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/icon-logo.png",
       "sizes": "512x512",

@@ -1756,7 +1756,7 @@
     }
   },
   "navbar": {
-    "appName": "tududi",
+    "appName": "GTDdo",
     "quickInboxCapture": "Cattura Rapida della Posta in Arrivo",
     "userMenu": "Menu Utente",
     "collapseSidebar": "Riduci Barra Laterale",
@@ -1860,7 +1860,7 @@
     "version": "Versione",
     "description": "Gestione delle attività self-hosted con organizzazione gerarchica e supporto multilingue. Costruito con amore per gli appassionati di produttività.",
     "madeWithLove": "Fatto con amore",
-    "appreciation": "Grazie per utilizzare tududi! Il tuo supporto aiuta a mantenere vivo e in crescita questo progetto. Se lo trovi utile, considera di supportare lo sviluppo.",
+    "appreciation": "GTDdo è un fork indipendente di tududi. I collegamenti qui sotto sostengono il progetto open source originale.",
     "supportDevelopment": "Supporta lo sviluppo",
     "community": "Comunità",
     "viewOnGitHub": "Visualizza su GitHub",
