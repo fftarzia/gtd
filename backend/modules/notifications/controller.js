@@ -13,6 +13,10 @@ function requireUserId(req) {
 }
 
 const notificationsController = {
+    getEmailStatus(req, res) {
+        res.json(notificationsService.getEmailStatus());
+    },
+
     async getAll(req, res, next) {
         try {
             const userId = requireUserId(req);
