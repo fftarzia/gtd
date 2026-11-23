@@ -8,12 +8,14 @@ jest.mock('../../services/emailService', () => ({
 const bcrypt = require('bcrypt');
 const { User, InboxItem, NotificationEmailDelivery } = require('../../models');
 const inboxService = require('../../modules/inbox/service');
-const { sendEmail } = require('../../services/emailService');
+const { isEmailEnabled, sendEmail } = require('../../services/emailService');
 
 describe('Inbox atomic email outbox', () => {
     let user;
 
     beforeEach(async () => {
+        // jest.config.js has resetMocks=true, which clears mocked implementations.
+        isEmailEnabled.mockReturnValue(true);
         user = await User.create({
             email: 'inbox-outbox@example.test',
             password_digest: await bcrypt.hash('example-password', 10),
