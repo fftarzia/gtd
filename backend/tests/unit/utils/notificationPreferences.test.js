@@ -511,6 +511,17 @@ describe('notificationPreferences utils', () => {
     });
 
     describe('deliverySources', () => {
+        it('includes email only for explicitly enabled event types', () => {
+            const user = {
+                notification_preferences: {
+                    dueTasks: { email: true },
+                    overdueTasks: { email: false },
+                },
+            };
+            expect(deliverySources(user, 'task_due_soon')).toEqual(['email']);
+            expect(deliverySources(user, 'task_overdue')).toEqual([]);
+        });
+
         it('lists every extra channel the user turned on', () => {
             const user = {
                 notification_preferences: {
