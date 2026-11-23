@@ -60,6 +60,7 @@ const BillingEvent = require('./billing_event')(sequelize);
 const WaitlistSubscriber = require('./waitlist_subscriber')(sequelize);
 const SiteVisit = require('./site_visit')(sequelize);
 const EmailDelivery = require('./email_delivery')(sequelize);
+const NotificationEmailDelivery = require('./notification_email_delivery')(sequelize);
 const UsageCounter = require('./usage_counter')(sequelize);
 const Feedback = require('./feedback')(sequelize);
 const PushSubscription = require('./push_subscription')(sequelize);
@@ -680,6 +681,7 @@ module.exports = {
     WaitlistSubscriber,
     SiteVisit,
     EmailDelivery,
+    NotificationEmailDelivery,
     UsageCounter,
     Feedback,
     Account,

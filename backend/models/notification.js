@@ -279,8 +279,8 @@ module.exports = (sequelize) => {
 
     async function sendEmailNotification(notificationInstance) {
         try {
-            // Reminder jobs can re-create notifications. Avoid mailing the
-            // same event repeatedly when channel_sent_at was carried over.
+            // Reminder jobs may recreate notifications while carrying the
+            // last successful email timestamp forward.
             if (
                 notificationInstance.wasChannelRecentlySent(
                     'email',
@@ -290,11 +290,7 @@ module.exports = (sequelize) => {
                 return;
             }
 
-            const {
-                sendEmail,
-                isEmailEnabled,
-            } = require('../services/emailService');
-
+            const { isEmailEnabled } = require('../services/emailService');
             if (!isEmailEnabled()) return;
 
             const UserModel = Notification.sequelize.models.User;
@@ -305,8 +301,12 @@ module.exports = (sequelize) => {
             if (!user?.email) return;
 
             const { renderEmail } = require('../emails');
-            const result = await sendEmail({
-                to: user.email,
+            const { enqueue } = require('../services/notificationEmailQueue');
+            await enqueue({
+                userId: notificationInstance.user_id,
+                kind: 'notification',
+                sourceUid: notificationInstance.uid,
+                recipient: user.email,
                 ...renderEmail('notification', {
                     title: notificationInstance.title,
                     message:
@@ -314,11 +314,10 @@ module.exports = (sequelize) => {
                         notificationInstance.title,
                 }),
             });
-            if (result.success) {
-                await notificationInstance.markChannelAsSent('email');
-            }
         } catch (error) {
-            console.error('Failed to send email notification:', error);
+            // Keep the in-app notification even if the database outbox
+            // cannot be written. SMTP failures are handled by the queue.
+            console.error('Failed to queue email notification:', error);
         }
     }
 
