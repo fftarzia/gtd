@@ -28,12 +28,16 @@ describe('SMTP notification service', () => {
 
     it('does not report SMTP as configured if email is disabled', () => {
         isEmailEnabled.mockReturnValue(false);
-        expect(notificationsService.getEmailStatus()).toEqual({ available: false });
+        expect(notificationsService.getEmailStatus()).toEqual({
+            available: false,
+        });
     });
 
     it('does not report SMTP as configured if required fields are missing', () => {
         hasValidEmailConfig.mockReturnValue(false);
-        expect(notificationsService.getEmailStatus()).toEqual({ available: false });
+        expect(notificationsService.getEmailStatus()).toEqual({
+            available: false,
+        });
     });
 
     it('sends the test email only to the signed-in user', async () => {
@@ -59,7 +63,10 @@ describe('SMTP notification service', () => {
     });
 
     it('returns delivery errors to the UI', async () => {
-        sendEmail.mockResolvedValue({ success: false, reason: 'Connection refused' });
+        sendEmail.mockResolvedValue({
+            success: false,
+            reason: 'Connection refused',
+        });
         await expect(
             notificationsService.triggerTestNotification(17, 'email')
         ).rejects.toThrow('Connection refused');
