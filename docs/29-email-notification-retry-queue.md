@@ -14,8 +14,9 @@ Apprise, external worker, or additional Portainer service is needed.
   PostgreSQL transaction**. SMTP outages do not block a capture.
 - The app attempts to send newly committed emails promptly. The existing task
   scheduler retries due emails every minute (including after restarts).
-- Retries use delays of 1, 5, 15, 30, 60, 120, and 240 minutes after successive
-  failures, for a total of **8 attempts**.
+- Retries occur 5, 30, 240, 1440, 2880 and 5760 minutes after each
+  preceding failed attempt, for a total of **7 attempts** (one immediate
+  delivery attempt plus six retries).
 - A delivery stuck in "sending" for 20 minutes is released after a worker
   crash. Rows remain in PostgreSQL across container restarts and redeploys.
 - Sent rows are retained for 7 days; permanently failed rows for 30 days.
