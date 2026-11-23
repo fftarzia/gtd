@@ -13,6 +13,7 @@ const { NotFoundError } = require('../../shared/errors');
 const { processInboxItem, parseAreaRefs } = require('./inboxProcessingService');
 const peopleService = require('../people/service');
 const attachments = require('./operations/attachments');
+const { notifyInboxCreated } = require('./emailNotification');
 
 // Items go out as plain objects with their files under `attachments`.
 async function withAttachments(items) {
@@ -78,6 +79,11 @@ class InboxService {
             content: validatedContent,
             title,
             source: validatedSource,
+        });
+
+        // Never hold up or fail quick capture because SMTP is unavailable.
+        notifyInboxCreated(userId, validatedContent).catch((error) => {
+            console.error('Inbox email notification failed:', error);
         });
 
         return { ..._.pick(item, PUBLIC_ATTRIBUTES), attachments: [] };

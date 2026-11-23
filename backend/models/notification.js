@@ -169,7 +169,7 @@ module.exports = (sequelize) => {
         });
 
         if (sources.includes('email')) {
-            await sendEmailNotification(userId, title, message, Notification);
+            await sendEmailNotification(notification);
         }
 
         if (sources.includes('telegram')) {
@@ -277,33 +277,45 @@ module.exports = (sequelize) => {
         }
     }
 
-    async function sendEmailNotification(
-        userId,
-        title,
-        message,
-        NotificationModel
-    ) {
+    async function sendEmailNotification(notificationInstance) {
         try {
+            // Reminder jobs can re-create notifications. Avoid mailing the
+            // same event repeatedly when channel_sent_at was carried over.
+            if (
+                notificationInstance.wasChannelRecentlySent(
+                    'email',
+                    24 * 60 * 60 * 1000
+                )
+            ) {
+                return;
+            }
+
             const {
                 sendEmail,
                 isEmailEnabled,
             } = require('../services/emailService');
 
-            if (!isEmailEnabled() || !message) {
-                return;
-            }
+            if (!isEmailEnabled()) return;
 
-            const UserModel = NotificationModel.sequelize.models.User;
-            const user = await UserModel.findByPk(userId, {
-                attributes: ['email', 'name'],
+            const UserModel = Notification.sequelize.models.User;
+            const user = await UserModel.findByPk(
+                notificationInstance.user_id,
+                { attributes: ['email', 'name'] }
+            );
+            if (!user?.email) return;
+
+            const { renderEmail } = require('../emails');
+            const result = await sendEmail({
+                to: user.email,
+                ...renderEmail('notification', {
+                    title: notificationInstance.title,
+                    message:
+                        notificationInstance.message ||
+                        notificationInstance.title,
+                }),
             });
-
-            if (user?.email) {
-                const { renderEmail } = require('../emails');
-                await sendEmail({
-                    to: user.email,
-                    ...renderEmail('notification', { title, message }),
-                });
+            if (result.success) {
+                await notificationInstance.markChannelAsSent('email');
             }
         } catch (error) {
             console.error('Failed to send email notification:', error);

@@ -25,6 +25,13 @@ interface NotificationsTabProps {
 }
 
 const DEFAULT_PREFERENCES: NotificationPreferences = {
+    inboxCreated: {
+        inApp: false,
+        email: false,
+        push: false,
+        telegram: false,
+        apprise: false,
+    },
     dueTasks: {
         inApp: true,
         email: false,
@@ -104,6 +111,8 @@ interface NotificationTypeRowProps {
     showTelegram: boolean;
     pushAvailable: boolean;
     appriseConfigured: boolean;
+    emailAvailable: boolean;
+    emailOnly?: boolean;
 }
 
 const NotificationTypeRow: React.FC<NotificationTypeRowProps> = ({
@@ -116,6 +125,8 @@ const NotificationTypeRow: React.FC<NotificationTypeRowProps> = ({
     showTelegram,
     pushAvailable,
     appriseConfigured,
+    emailAvailable,
+    emailOnly = false,
 }) => {
     const renderToggle = (
         channel: 'inApp' | 'email' | 'push' | 'telegram' | 'apprise',
@@ -160,20 +171,20 @@ const NotificationTypeRow: React.FC<NotificationTypeRowProps> = ({
                 </div>
             </td>
             <td className="py-4 px-4 text-center">
-                {renderToggle('inApp', preferences.inApp, true)}
+                {renderToggle('inApp', preferences.inApp, !emailOnly)}
             </td>
             <td className="py-4 px-4 text-center">
-                {renderToggle('email', preferences.email, false)}
+                {renderToggle('email', preferences.email, emailAvailable)}
             </td>
             <td className="py-4 px-4 text-center">
-                {renderToggle('push', preferences.push, pushAvailable)}
+                {renderToggle('push', preferences.push, pushAvailable && !emailOnly)}
             </td>
             {showTelegram && (
                 <td className="py-4 px-4 text-center">
                     {renderToggle(
                         'telegram',
                         preferences.telegram,
-                        telegramConfigured
+                        telegramConfigured && !emailOnly
                     )}
                 </td>
             )}
@@ -181,7 +192,7 @@ const NotificationTypeRow: React.FC<NotificationTypeRowProps> = ({
                 {renderToggle(
                     'apprise',
                     preferences.apprise,
-                    appriseConfigured
+                    appriseConfigured && !emailOnly
                 )}
             </td>
         </tr>
@@ -206,6 +217,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
     const [pushState, setPushState] = React.useState<PushState | null>(null);
     const [pushDevices, setPushDevices] = React.useState<number>(0);
     const [appriseConfigured, setAppriseConfigured] = React.useState(false);
+    const [emailAvailable, setEmailAvailable] = React.useState(false);
 
     // Fetch profile data to check telegram configuration
     React.useEffect(() => {
@@ -217,6 +229,15 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
             countPushDevices()
                 .then(setPushDevices)
                 .catch(() => setPushDevices(0));
+            fetch('/api/notifications/email-status', {
+                credentials: 'include',
+            })
+                .then((res) => {
+                    if (!res.ok) throw new Error('Email status unavailable');
+                    return res.json();
+                })
+                .then((data) => setEmailAvailable(data.available === true))
+                .catch(() => setEmailAvailable(false));
         }
     }, [isActive, pushState]);
 
@@ -309,7 +330,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
 
     const channelAvailable: Record<Channel, boolean> = {
         inApp: true,
-        email: false,
+        email: emailAvailable,
         push: pushAvailable,
         telegram: telegramConfigured,
         apprise: appriseConfigured,
@@ -367,12 +388,13 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                                 {t('notifications.channels.inApp', 'In-app')}
                             </th>
                             <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                <div className="flex items-center justify-center gap-1">
+                                <div className="flex flex-col items-center justify-center">
                                     {t('notifications.channels.email', 'Email')}
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-500 font-normal">
-                                        ({t('common.comingSoon', 'Coming Soon')}
-                                        )
-                                    </span>
+                                    {!emailAvailable && (
+                                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-normal">
+                                            {t('notifications.email.notConfigured', 'SMTP not configured')}
+                                        </span>
+                                    )}
                                 </div>
                             </th>
                             <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -393,6 +415,27 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                     </thead>
                     <tbody>
                         <NotificationTypeRow
+                            icon={FolderOpenIcon}
+                            label={t(
+                                'notifications.types.inboxCreated',
+                                'New Inbox item'
+                            )}
+                            description={t(
+                                'notifications.descriptions.inboxCreated',
+                                'Send the full text of every new Inbox item by email'
+                            )}
+                            preferences={preferences.inboxCreated}
+                            onToggle={(channel, value) =>
+                                handleToggle('inboxCreated', channel, value)
+                            }
+                            telegramConfigured={telegramConfigured}
+                            showTelegram={showTelegram}
+                            pushAvailable={pushAvailable}
+                            appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
+                            emailOnly
+                        />
+                        <NotificationTypeRow
                             icon={BellAlertIcon}
                             label={t(
                                 'notifications.types.dueTasks',
@@ -410,6 +453,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={ExclamationTriangleIcon}
@@ -429,6 +473,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={ClockIcon}
@@ -448,6 +493,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={BellIcon}
@@ -467,6 +513,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={ChatBubbleLeftRightIcon}
@@ -486,6 +533,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={FireIcon}
@@ -505,6 +553,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={FolderIcon}
@@ -524,6 +573,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                         <NotificationTypeRow
                             icon={FolderOpenIcon}
@@ -543,6 +593,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                             showTelegram={showTelegram}
                             pushAvailable={pushAvailable}
                             appriseConfigured={appriseConfigured}
+                            emailAvailable={emailAvailable}
                         />
                     </tbody>
                     <tfoot>
@@ -596,8 +647,12 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
                         {t('notifications.info.title', 'Note:')}
                     </span>{' '}
                     {t(
-                        'notifications.info.message',
-                        'Email notifications are coming soon. In-app, Push and Telegram notifications are available.'
+                        emailAvailable
+                            ? 'notifications.email.enabledHelp'
+                            : 'notifications.email.disabledHelp',
+                        emailAvailable
+                            ? 'Choose which events should send an email. Inbox emails contain the original captured text.'
+                            : 'Configure SMTP on the server to enable email notifications.'
                     )}
                 </p>
             </div>

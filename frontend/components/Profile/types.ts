@@ -70,6 +70,13 @@ export interface SidebarSettings {
 }
 
 export interface NotificationPreferences {
+    inboxCreated: {
+        inApp: boolean;
+        email: boolean;
+        push: boolean;
+        telegram: boolean;
+        apprise: boolean;
+    };
     dueTasks: {
         inApp: boolean;
         email: boolean;
