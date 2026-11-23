@@ -1,12 +1,17 @@
 'use strict';
 
-const { shouldSendEmailNotification } = require('../../utils/notificationPreferences');
+const {
+    shouldSendEmailNotification,
+} = require('../../utils/notificationPreferences');
 
 // The Inbox is a capture space, not a task notification. Send its exact
 // text as plain text (preserving line breaks), only for users who opt in.
 // This runs after an item has been saved and must never undo a capture.
 async function notifyInboxCreated(userId, content) {
-    const { isEmailEnabled, sendEmail } = require('../../services/emailService');
+    const {
+        isEmailEnabled,
+        sendEmail,
+    } = require('../../services/emailService');
     if (!isEmailEnabled()) return;
 
     const { User } = require('../../models');
