@@ -54,9 +54,10 @@ describe('Inbox atomic email outbox', () => {
                 })
             ).rejects.toThrow('Outbox write failed');
 
-            expect(
-                await InboxItem.count({ where: { user_id: user.id } })
-            ).toBe(0);
+            const remaining = await InboxItem.count({
+                where: { user_id: user.id },
+            });
+            expect(remaining).toBe(0);
             expect(
                 await NotificationEmailDelivery.count({
                     where: { user_id: user.id },
@@ -76,9 +77,10 @@ describe('Inbox atomic email outbox', () => {
             source: 'web',
         });
 
-        expect(await InboxItem.count({ where: { user_id: user.id } })).toBe(
-            1
-        );
+        const captured = await InboxItem.count({
+            where: { user_id: user.id },
+        });
+        expect(captured).toBe(1);
         expect(
             await NotificationEmailDelivery.count({
                 where: { user_id: user.id },
