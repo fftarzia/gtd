@@ -72,9 +72,11 @@ public final class QuickCaptureActivity extends Activity {
             return;
         }
         final String token;
+        final CloudflareCredentials cloudflare;
         final String url = settings.getServerUrl();
         try {
             token = settings.readToken();
+            cloudflare = settings.readCloudflareCredentials();
             if (url.isEmpty() || token.isEmpty()) {
                 statusText.setText("Server o token mancanti. Apri Impostazioni.");
                 return;
@@ -89,7 +91,7 @@ public final class QuickCaptureActivity extends Activity {
         worker.execute(() -> {
             String failure = null;
             try {
-                ApiClient.createInboxItem(url, token, note);
+                ApiClient.createInboxItem(url, token, cloudflare, note);
             } catch (Exception error) {
                 failure = MainActivity.safeError(error);
             }

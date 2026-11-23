@@ -5,6 +5,10 @@
     <string name="settings_title">Collega GTDdo</string>
     <string name="server_url">Indirizzo del server (HTTPS)</string>
     <string name="api_token">API token personale</string>
+    <string name="cloudflare_title">Cloudflare Access (solo per dominio protetto)</string>
+    <string name="cloudflare_client_id">Cloudflare Service Token: Client ID</string>
+    <string name="cloudflare_client_secret">Cloudflare Service Token: Client Secret</string>
+    <string name="cloudflare_clear">Elimina credenziali Cloudflare</string>
     <string name="save_settings">Salva configurazione</string>
     <string name="test_connection">Verifica connessione</string>
     <string name="add_tile">Aggiungi pulsante rapido</string>

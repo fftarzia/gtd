@@ -12,11 +12,11 @@ public final class ApiClient {
     private static final int TIMEOUT_MS = 12000;
     private ApiClient() {}
 
-    public static void createInboxItem(String baseUrl, String token, String content) throws Exception {
+    public static void createInboxItem(String baseUrl, String token, CloudflareCredentials cloudflare, String content) throws Exception {
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("Scrivi prima una nota.");
         }
-        HttpURLConnection conn = open(baseUrl, token, "POST");
+        HttpURLConnection conn = open(baseUrl, token, cloudflare, "POST");
         try {
             JSONObject body = new JSONObject();
             body.put("content", content.trim());
@@ -37,8 +37,8 @@ public final class ApiClient {
         }
     }
 
-    public static void verify(String baseUrl, String token) throws Exception {
-        HttpURLConnection conn = open(baseUrl, token, "GET");
+    public static void verify(String baseUrl, String token, CloudflareCredentials cloudflare) throws Exception {
+        HttpURLConnection conn = open(baseUrl, token, cloudflare, "GET");
         try {
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
@@ -49,7 +49,7 @@ public final class ApiClient {
         }
     }
 
-    private static HttpURLConnection open(String baseUrl, String token, String method) throws IOException {
+    private static HttpURLConnection open(String baseUrl, String token, CloudflareCredentials cloudflare, String method) throws IOException {
         if (token == null || token.trim().isEmpty()) {
             throw new IllegalArgumentException("Configura prima il token API.");
         }
@@ -60,6 +60,10 @@ public final class ApiClient {
         conn.setConnectTimeout(TIMEOUT_MS);
         conn.setReadTimeout(TIMEOUT_MS);
         conn.setRequestProperty("Authorization", "Bearer " + token.trim());
+        if (cloudflare != null && cloudflare.isConfigured()) {
+            conn.setRequestProperty("CF-Access-Client-Id", cloudflare.getClientId());
+            conn.setRequestProperty("CF-Access-Client-Secret", cloudflare.getClientSecret());
+        }
         conn.setRequestProperty("Accept", "application/json");
         return conn;
     }
@@ -69,7 +73,7 @@ public final class ApiClient {
         if (status == 403) return "L'utente non e' autorizzato (HTTP 403).";
         if (status == 404) return "API Inbox non trovata: verifica l'URL e la versione di GTDdo (HTTP 404).";
         if (status == 429) return "Troppe richieste. Riprova fra poco (HTTP 429).";
-        if (status >= 300 && status < 400) return "Il server ha restituito un reindirizzamento non consentito (HTTP " + status + ").";
+        if (status >= 300 && status < 400) return "Reindirizzamento HTTP non consentito. Verifica credenziali e criteri Cloudflare Access (HTTP " + status + ").";
         if (status >= 500) return "Errore del server GTDdo (HTTP " + status + ").";
         return "Il server non ha accettato la richiesta (HTTP " + status + ").";
     }

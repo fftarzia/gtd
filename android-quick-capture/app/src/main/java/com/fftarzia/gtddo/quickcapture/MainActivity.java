@@ -20,6 +20,9 @@ public final class MainActivity extends Activity {
     private EditText serverInput;
     private EditText tokenInput;
     private TextView tokenState;
+    private EditText cfClientIdInput;
+    private EditText cfClientSecretInput;
+    private TextView cfCredentialsState;
     private TextView statusText;
     private Button testButton;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -33,12 +36,26 @@ public final class MainActivity extends Activity {
         serverInput = findViewById(R.id.inputServerUrl);
         tokenInput = findViewById(R.id.inputApiToken);
         tokenState = findViewById(R.id.tokenState);
+        cfClientIdInput = findViewById(R.id.inputCfClientId);
+        cfClientSecretInput = findViewById(R.id.inputCfClientSecret);
+        cfCredentialsState = findViewById(R.id.cfCredentialsState);
         statusText = findViewById(R.id.statusText);
         testButton = findViewById(R.id.buttonTestConnection);
         serverInput.setText(settings.getServerUrl());
         refreshTokenState();
 
         findViewById(R.id.buttonSaveSettings).setOnClickListener(v -> saveConfiguration());
+        findViewById(R.id.buttonClearCloudflare).setOnClickListener(v -> {
+            try {
+                settings.clearCloudflareCredentials();
+                cfClientIdInput.setText("");
+                cfClientSecretInput.setText("");
+                refreshTokenState();
+                statusText.setText("Credenziali Cloudflare eliminate dal telefono.");
+            } catch (Exception error) {
+                statusText.setText("Eliminazione non riuscita: " + safeError(error));
+            }
+        });
         testButton.setOnClickListener(v -> testConnection());
         findViewById(R.id.buttonOpenCapture).setOnClickListener(
                 v -> startActivity(new Intent(this, QuickCaptureActivity.class)));
@@ -49,12 +66,18 @@ public final class MainActivity extends Activity {
         tokenState.setText(settings.hasToken()
                 ? "Token salvato in modo cifrato. Lascia vuoto il campo per mantenerlo."
                 : "Nessun token salvato. Creane uno nelle impostazioni API di GTDdo.");
+        cfCredentialsState.setText(settings.hasCloudflareCredentials()
+                ? "Cloudflare Access attivo. Entrambe le credenziali sono cifrate. Lascia i campi vuoti per mantenerle."
+                : "Cloudflare Access non configurato. Compila entrambi i campi solo per il dominio protetto.");
     }
 
     private void saveConfiguration() {
         try {
             String url = EndpointUrl.normalize(serverInput.getText().toString());
             String newToken = tokenInput.getText().toString().trim();
+            CloudflareCredentials newCloudflare = new CloudflareCredentials(
+                    cfClientIdInput.getText().toString(),
+                    cfClientSecretInput.getText().toString());
             if (newToken.isEmpty() && !settings.hasToken()) {
                 statusText.setText("Inserisci un token API personale.");
                 return;
@@ -64,9 +87,17 @@ public final class MainActivity extends Activity {
                 statusText.setText("Se cambi server, inserisci anche un token nuovo.");
                 return;
             }
+            if (!url.equals(settings.getServerUrl())
+                    && settings.hasCloudflareCredentials() && !newCloudflare.isConfigured()) {
+                statusText.setText("Se cambi server, reinserisci entrambi i dati Cloudflare oppure eliminali.");
+                return;
+            }
             if (!newToken.isEmpty()) settings.saveToken(newToken);
+            if (newCloudflare.isConfigured()) settings.saveCloudflareCredentials(newCloudflare);
             settings.saveServerUrl(url);
             tokenInput.setText("");
+            cfClientIdInput.setText("");
+            cfClientSecretInput.setText("");
             serverInput.setText(url);
             refreshTokenState();
             statusText.setText("Configurazione salvata. Usa Verifica connessione.");
@@ -78,8 +109,10 @@ public final class MainActivity extends Activity {
     private void testConnection() {
         final String url = settings.getServerUrl();
         final String token;
+        final CloudflareCredentials cloudflare;
         try {
             token = settings.readToken();
+            cloudflare = settings.readCloudflareCredentials();
             if (url.isEmpty() || token.isEmpty()) {
                 statusText.setText("Salva prima l'indirizzo e il token.");
                 return;
@@ -93,7 +126,7 @@ public final class MainActivity extends Activity {
         worker.execute(() -> {
             String response;
             try {
-                ApiClient.verify(url, token);
+                ApiClient.verify(url, token, cloudflare);
                 response = "Connessione OK. Puoi usare Nota rapida.";
             } catch (Exception error) {
                 response = "Connessione non riuscita: " + safeError(error);

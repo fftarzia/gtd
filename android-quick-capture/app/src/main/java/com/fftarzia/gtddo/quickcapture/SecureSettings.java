@@ -20,6 +20,8 @@ public final class SecureSettings {
     private static final String STORE = "quick_capture_settings";
     private static final String ALIAS = "tududi_quick_capture_aes";
     private static final String TOKEN = "api_token_encrypted";
+    private static final String CF_CLIENT_ID = "cf_access_client_id_encrypted";
+    private static final String CF_CLIENT_SECRET = "cf_access_client_secret_encrypted";
     private static final String DRAFT = "draft_encrypted";
     private static final String SERVER_URL = "server_url";
     private static final int GCM_TAG_BITS = 128;
@@ -56,6 +58,39 @@ public final class SecureSettings {
         return readEncrypted(TOKEN);
     }
 
+    public boolean hasCloudflareCredentials() {
+        return prefs.contains(CF_CLIENT_ID) && prefs.contains(CF_CLIENT_SECRET);
+    }
+
+    public CloudflareCredentials readCloudflareCredentials()
+            throws GeneralSecurityException, IOException {
+        if (prefs.contains(CF_CLIENT_ID) != prefs.contains(CF_CLIENT_SECRET)) {
+            throw new IOException("Credenziali Cloudflare incomplete: salva nuovamente entrambe.");
+        }
+        return new CloudflareCredentials(
+                readEncrypted(CF_CLIENT_ID), readEncrypted(CF_CLIENT_SECRET));
+    }
+
+    /** Commit both values at once so no incomplete credential pair is stored. */
+    public void saveCloudflareCredentials(CloudflareCredentials credentials)
+            throws GeneralSecurityException, IOException {
+        if (credentials == null || !credentials.isConfigured()) {
+            throw new IllegalArgumentException("Inserisci entrambe le credenziali Cloudflare.");
+        }
+        String id = encrypt(credentials.getClientId());
+        String secret = encrypt(credentials.getClientSecret());
+        if (!prefs.edit().putString(CF_CLIENT_ID, id)
+                .putString(CF_CLIENT_SECRET, secret).commit()) {
+            throw new IOException("Impossibile salvare le credenziali Cloudflare.");
+        }
+    }
+
+    public void clearCloudflareCredentials() throws IOException {
+        if (!prefs.edit().remove(CF_CLIENT_ID).remove(CF_CLIENT_SECRET).commit()) {
+            throw new IOException("Impossibile eliminare le credenziali Cloudflare.");
+        }
+    }
+
     public void saveDraft(String draft) throws GeneralSecurityException, IOException {
         if (draft == null || draft.isEmpty()) {
             if (!prefs.edit().remove(DRAFT).commit()) {
@@ -71,14 +106,17 @@ public final class SecureSettings {
     }
 
     private void writeEncrypted(String key, String plain) throws GeneralSecurityException, IOException {
+        if (!prefs.edit().putString(key, encrypt(plain)).commit()) {
+            throw new IOException("Salvataggio sicuro non riuscito.");
+        }
+    }
+
+    private String encrypt(String plain) throws GeneralSecurityException, IOException {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKey());
         byte[] encrypted = cipher.doFinal(plain.getBytes(StandardCharsets.UTF_8));
-        String serialized = "v1:" + Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP)
+        return "v1:" + Base64.encodeToString(cipher.getIV(), Base64.NO_WRAP)
                 + ":" + Base64.encodeToString(encrypted, Base64.NO_WRAP);
-        if (!prefs.edit().putString(key, serialized).commit()) {
-            throw new IOException("Salvataggio sicuro non riuscito.");
-        }
     }
 
     private String readEncrypted(String key) throws GeneralSecurityException, IOException {
