@@ -1,6 +1,7 @@
 const {
     shouldSendInAppNotification,
     shouldSendPushNotification,
+    shouldSendEmailNotification,
     deliverySources,
     getDefaultNotificationPreferences,
     ensureNotificationPreferences,
@@ -13,6 +14,13 @@ describe('notificationPreferences utils', () => {
             const defaults = getDefaultNotificationPreferences();
 
             expect(defaults).toEqual({
+                inboxCreated: {
+                    inApp: false,
+                    email: false,
+                    push: false,
+                    telegram: false,
+                    apprise: false,
+                },
                 dueTasks: {
                     inApp: true,
                     email: false,
@@ -415,7 +423,10 @@ describe('notificationPreferences utils', () => {
 
             const result = ensureNotificationPreferences(input);
 
-            expect(result).toEqual(input);
+            expect(result).toEqual({
+                ...input,
+                inboxCreated: getDefaultNotificationPreferences().inboxCreated,
+            });
         });
 
         it('should replace invalid preference type objects with defaults', () => {
@@ -475,6 +486,27 @@ describe('notificationPreferences utils', () => {
                 true
             );
             expect(shouldSendPushNotification(user, 'deferUntil')).toBe(false);
+        });
+    });
+
+    describe('shouldSendEmailNotification', () => {
+        it('is disabled without an explicit opt-in', () => {
+            expect(shouldSendEmailNotification(null, 'inboxCreated')).toBe(false);
+            expect(
+                shouldSendEmailNotification({ notification_preferences: {} }, 'inboxCreated')
+            ).toBe(false);
+        });
+
+        it('honors Inbox and mapped task preferences', () => {
+            const user = {
+                notification_preferences: {
+                    inboxCreated: { email: true },
+                    dueTasks: { email: true },
+                },
+            };
+            expect(shouldSendEmailNotification(user, 'inboxCreated')).toBe(true);
+            expect(shouldSendEmailNotification(user, 'task_due_soon')).toBe(true);
+            expect(shouldSendEmailNotification(user, 'task_overdue')).toBe(false);
         });
     });
 
