@@ -2808,16 +2808,22 @@
     "accountsCount_other": "{{count}} other accounts"
   },
   "notifications": {
+    "email": {
+      "notConfigured": "SMTP not configured",
+      "enabledHelp": "Choose which events should send an email. Inbox emails contain the original captured text.",
+      "disabledHelp": "Configure SMTP on the server to enable email notifications."
+    },
     "table": {
       "type": "Notification Type"
     },
     "channels": {
-      "inApp": "In-app",
+      "inApp": "Web app",
       "email": "Email",
       "push": "Push",
       "telegram": "Telegram"
     },
     "types": {
+      "inboxCreated": "New Inbox item",
       "dueTasks": "Due Tasks",
       "overdueTasks": "Overdue Tasks",
       "deferUntil": "Defer Until",
@@ -2828,6 +2834,7 @@
       "comments": "Comments & Mentions"
     },
     "descriptions": {
+      "inboxCreated": "Email the exact text of every newly captured Inbox item",
       "dueTasks": "Tasks that are due within 24 hours",
       "overdueTasks": "Tasks that have passed their due date",
       "deferUntil": "Tasks that are now available to work on",
@@ -2853,7 +2860,7 @@
     },
     "info": {
       "title": "Note:",
-      "message": "Email notifications are coming soon. In-app, Push and Telegram notifications are available."
+      "message": "Email notifications can be enabled by configuring SMTP."
     },
     "push": {
       "title": "Push notifications on this device",
