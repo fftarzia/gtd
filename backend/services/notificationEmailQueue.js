@@ -5,8 +5,8 @@ const { NotificationEmailDelivery, Notification } = require('../models');
 const { isEmailEnabled, sendEmail } = require('./emailService');
 const { logError } = require('./logService');
 
-const MAX_ATTEMPTS = 8;
-const RETRY_DELAYS_MIN = [1, 5, 15, 30, 60, 120, 240];
+const RETRY_DELAYS_MIN = [5, 30, 240, 1440, 2880, 5760];
+const MAX_ATTEMPTS = RETRY_DELAYS_MIN.length + 1;
 const STUCK_SENDING_MS = 20 * 60 * 1000;
 const KEEP_SENT_DAYS = 7;
 const KEEP_FAILED_DAYS = 30;
