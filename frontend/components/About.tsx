@@ -53,10 +53,10 @@ const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
                             <img
                                 src={
                                     isDarkMode
-                                        ? '/wide-logo-light.png'
-                                        : '/wide-logo-dark.png'
+                                        ? '/gtddo-wordmark-light.svg'
+                                        : '/gtddo-wordmark-dark.svg'
                                 }
-                                alt="tududi"
+                                alt="GTDdo"
                                 className="h-16 w-auto"
                             />
                         </div>
@@ -86,7 +86,7 @@ const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
                         <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                             {t(
                                 'about.appreciation',
-                                'Thank you for using tududi! Your support helps keep this project alive and growing. If you find it useful, consider supporting the development.'
+                                'GTDdo is an independent fork of tududi. The links below support the original open-source project.'
                             )}
                         </p>
                     </div>
