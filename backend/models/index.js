@@ -85,6 +85,16 @@ User.hasMany(PushSubscription, {
     as: 'PushSubscriptions',
 });
 PushSubscription.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+User.hasMany(NotificationEmailDelivery, {
+    foreignKey: 'user_id',
+    as: 'EmailNotificationDeliveries',
+    onDelete: 'CASCADE',
+});
+NotificationEmailDelivery.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'User',
+    onDelete: 'CASCADE',
+});
 User.hasMany(Webhook, { foreignKey: 'user_id', as: 'Webhooks' });
 Webhook.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
 User.hasOne(UserMfa, { foreignKey: 'user_id', as: 'Mfa' });

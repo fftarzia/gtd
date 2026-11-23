@@ -198,8 +198,7 @@ async function processDue({ now = new Date(), limit = 100 } = {}) {
         );
         sent += results.filter(
             (result) =>
-                result.status === 'fulfilled' &&
-                result.value?.status === 'sent'
+                result.status === 'fulfilled' && result.value?.status === 'sent'
         ).length;
     }
 
