@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FAFAFA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_title"
+            android:textSize="26sp"
+            android:textColor="#202124"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incolla l'indirizzo HTTPS della tua installazione e il token personale creato in tududi. Il token viene cifrato nel dispositivo."
+            android:textColor="#555555"
+            android:layout_marginBottom="14dp" />
+
+        <EditText
+            android:id="@+id/inputServerUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/server_url"
+            android:inputType="textUri"
+            android:singleLine="true"
+            
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/inputApiToken"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/api_token"
+            android:inputType="textPassword"
+            android:singleLine="true"
+            android:importantForAutofill="no"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tokenState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"
+            android:textColor="#555555"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/buttonSaveSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/save_settings" />
+
+        <Button
+            android:id="@+id/buttonTestConnection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/test_connection" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp" />
+
+        <Button
+            android:id="@+id/buttonAddTile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/add_tile" />
+
+        <Button
+            android:id="@+id/buttonOpenCapture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/open_capture" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#454545"
+            android:textSize="14sp"
+            android:layout_marginTop="20dp" />
+
+    </LinearLayout>
+</ScrollView>
