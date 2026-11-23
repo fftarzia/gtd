@@ -5,7 +5,10 @@ const { NotFoundError, ValidationError } = require('../../shared/errors');
 
 class NotificationsService {
     getEmailStatus() {
-        const { isEmailEnabled, hasValidEmailConfig } = require('../../services/emailService');
+        const {
+            isEmailEnabled,
+            hasValidEmailConfig,
+        } = require('../../services/emailService');
         return { available: isEmailEnabled() && hasValidEmailConfig() };
     }
 
@@ -134,7 +137,9 @@ class NotificationsService {
         if (channel === 'email') {
             const { sendEmail } = require('../../services/emailService');
             if (!this.getEmailStatus().available) {
-                throw new ValidationError('Configure SMTP before testing email notifications');
+                throw new ValidationError(
+                    'Configure SMTP before testing email notifications'
+                );
             }
             const user = await User.findByPk(userId, {
                 attributes: ['email'],
@@ -148,7 +153,9 @@ class NotificationsService {
                 text: 'Le notifiche email di GTDdo funzionano.',
             });
             if (!result.success) {
-                throw new ValidationError(result.reason || 'Could not send test email');
+                throw new ValidationError(
+                    result.reason || 'Could not send test email'
+                );
             }
             return { channel, delivered: true };
         }
