@@ -174,7 +174,7 @@ describe('PostgreSQL email notification outbox', () => {
         expect(sendEmail).not.toHaveBeenCalled();
     });
 
-    it('retries a transient failure after one minute', async () => {
+    it('retries a transient failure after five minutes', async () => {
         sendEmail.mockResolvedValue({
             success: false,
             reason: 'SMTP connection failed',
@@ -183,7 +183,7 @@ describe('PostgreSQL email notification outbox', () => {
         expect(result.status).toBe('pending');
         expect(result.attempts).toBe(1);
         expect(result.next_attempt_at).toEqual(
-            new Date(DATE.getTime() + 60 * 1000)
+            new Date(DATE.getTime() + 5 * 60 * 1000)
         );
         expect(result.last_error).toBe('SMTP connection failed');
     });
@@ -193,12 +193,12 @@ describe('PostgreSQL email notification outbox', () => {
         sendEmail.mockResolvedValue({ success: false, reason: 'Rate limited' });
         await queue.deliver(12, { now: DATE });
         expect(delivery.next_attempt_at).toEqual(
-            new Date(DATE.getTime() + 60 * 60 * 1000)
+            new Date(DATE.getTime() + 2880 * 60 * 1000)
         );
     });
 
-    it('stops after eight attempts', async () => {
-        delivery.attempts = 8;
+    it('stops after seven attempts', async () => {
+        delivery.attempts = 7;
         sendEmail.mockResolvedValue({
             success: false,
             reason: 'SMTP unavailable',
@@ -253,7 +253,7 @@ describe('PostgreSQL email notification outbox', () => {
     });
 
     it('provides retry policy for monitoring', () => {
-        expect(queue.MAX_ATTEMPTS).toBe(8);
-        expect(queue.RETRY_DELAYS_MIN).toEqual([1, 5, 15, 30, 60, 120, 240]);
+        expect(queue.MAX_ATTEMPTS).toBe(7);
+        expect(queue.RETRY_DELAYS_MIN).toEqual([5, 30, 240, 1440, 2880, 5760]);
     });
 });
