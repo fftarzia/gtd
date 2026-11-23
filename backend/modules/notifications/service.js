@@ -4,6 +4,11 @@ const notificationsRepository = require('./repository');
 const { NotFoundError, ValidationError } = require('../../shared/errors');
 
 class NotificationsService {
+    getEmailStatus() {
+        const { isEmailEnabled, hasValidEmailConfig } = require('../../services/emailService');
+        return { available: isEmailEnabled() && hasValidEmailConfig() };
+    }
+
     async getAll(userId, options) {
         const { limit = 10, offset = 0, includeRead = 'true', type } = options;
         return notificationsRepository.getUserNotifications(userId, {
@@ -127,9 +132,25 @@ class NotificationsService {
         }
 
         if (channel === 'email') {
-            throw new ValidationError(
-                'Email notifications are not available yet'
-            );
+            const { sendEmail } = require('../../services/emailService');
+            if (!this.getEmailStatus().available) {
+                throw new ValidationError('Configure SMTP before testing email notifications');
+            }
+            const user = await User.findByPk(userId, {
+                attributes: ['email'],
+            });
+            if (!user?.email) {
+                throw new ValidationError('Your account has no email address');
+            }
+            const result = await sendEmail({
+                to: user.email,
+                subject: 'GTDdo: test notifiche email',
+                text: 'Le notifiche email di GTDdo funzionano.',
+            });
+            if (!result.success) {
+                throw new ValidationError(result.reason || 'Could not send test email');
+            }
+            return { channel, delivered: true };
         }
 
         throw new ValidationError(`Invalid channel: ${channel}`);
