@@ -5,7 +5,10 @@ const router = express.Router();
 const notificationsController = require('./controller');
 
 router.get('/notifications', notificationsController.getAll);
-router.get('/notifications/email-status', notificationsController.getEmailStatus);
+router.get(
+    '/notifications/email-status',
+    notificationsController.getEmailStatus
+);
 router.get(
     '/notifications/unread-count',
     notificationsController.getUnreadCount
