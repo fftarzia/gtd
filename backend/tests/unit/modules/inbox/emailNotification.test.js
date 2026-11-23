@@ -79,7 +79,9 @@ describe('Inbox email notifications', () => {
         });
         const log = jest.spyOn(console, 'error').mockImplementation(() => {});
         try {
-            await expect(notifyInboxCreated(1, 'Capture this idea')).resolves.toBeUndefined();
+            await expect(
+                notifyInboxCreated(1, 'Capture this idea')
+            ).resolves.toBeUndefined();
             expect(log).toHaveBeenCalledWith(
                 'Could not deliver Inbox email notification:',
                 'SMTP unavailable'
