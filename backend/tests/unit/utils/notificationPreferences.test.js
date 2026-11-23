@@ -491,9 +491,14 @@ describe('notificationPreferences utils', () => {
 
     describe('shouldSendEmailNotification', () => {
         it('is disabled without an explicit opt-in', () => {
-            expect(shouldSendEmailNotification(null, 'inboxCreated')).toBe(false);
+            expect(shouldSendEmailNotification(null, 'inboxCreated')).toBe(
+                false
+            );
             expect(
-                shouldSendEmailNotification({ notification_preferences: {} }, 'inboxCreated')
+                shouldSendEmailNotification(
+                    { notification_preferences: {} },
+                    'inboxCreated'
+                )
             ).toBe(false);
         });
 
@@ -504,9 +509,15 @@ describe('notificationPreferences utils', () => {
                     dueTasks: { email: true },
                 },
             };
-            expect(shouldSendEmailNotification(user, 'inboxCreated')).toBe(true);
-            expect(shouldSendEmailNotification(user, 'task_due_soon')).toBe(true);
-            expect(shouldSendEmailNotification(user, 'task_overdue')).toBe(false);
+            expect(shouldSendEmailNotification(user, 'inboxCreated')).toBe(
+                true
+            );
+            expect(shouldSendEmailNotification(user, 'task_due_soon')).toBe(
+                true
+            );
+            expect(shouldSendEmailNotification(user, 'task_overdue')).toBe(
+                false
+            );
         });
     });
 
