@@ -54,6 +54,7 @@ const CLEANUP_TABLES = [
     'rate_limits',
     'usage_counters',
     'email_deliveries',
+    'notification_email_deliveries',
     'user_recovery_codes',
     'user_mfa',
     'waitlist_subscribers',

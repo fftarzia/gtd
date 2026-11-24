@@ -169,7 +169,7 @@ module.exports = (sequelize) => {
         });
 
         if (sources.includes('email')) {
-            await sendEmailNotification(userId, title, message, Notification);
+            await sendEmailNotification(notification);
         }
 
         if (sources.includes('telegram')) {
@@ -277,36 +277,70 @@ module.exports = (sequelize) => {
         }
     }
 
-    async function sendEmailNotification(
-        userId,
-        title,
-        message,
-        NotificationModel
-    ) {
+    async function sendEmailNotification(notificationInstance) {
         try {
-            const {
-                sendEmail,
-                isEmailEnabled,
-            } = require('../services/emailService');
-
-            if (!isEmailEnabled() || !message) {
+            // Reminder jobs may recreate notifications while carrying the
+            // last successful email timestamp forward.
+            if (
+                notificationInstance.wasChannelRecentlySent(
+                    'email',
+                    24 * 60 * 60 * 1000
+                )
+            ) {
                 return;
             }
 
-            const UserModel = NotificationModel.sequelize.models.User;
-            const user = await UserModel.findByPk(userId, {
-                attributes: ['email', 'name'],
-            });
+            const { isEmailEnabled } = require('../services/emailService');
+            if (!isEmailEnabled()) return;
 
-            if (user?.email) {
-                const { renderEmail } = require('../emails');
-                await sendEmail({
-                    to: user.email,
-                    ...renderEmail('notification', { title, message }),
-                });
-            }
+            const UserModel = Notification.sequelize.models.User;
+            const user = await UserModel.findByPk(
+                notificationInstance.user_id,
+                { attributes: ['email', 'name'] }
+            );
+            if (!user?.email) return;
+
+            const { renderEmail } = require('../emails');
+            const { enqueue } = require('../services/notificationEmailQueue');
+            // Due/overdue jobs recreate unread notification rows every
+            // 15 minutes. Deduplicate by entity, event type and UTC day
+            // rather than by the transient notification row UID.
+            const repeatingTypes = [
+                'task_due_soon',
+                'task_overdue',
+                'project_due_soon',
+                'project_overdue',
+            ];
+            const entityUid =
+                notificationInstance.data?.taskUid ||
+                notificationInstance.data?.projectUid;
+            const dedupKey =
+                repeatingTypes.includes(notificationInstance.type) && entityUid
+                    ? [
+                          'notification',
+                          notificationInstance.user_id,
+                          notificationInstance.type,
+                          entityUid,
+                          new Date().toISOString().slice(0, 10),
+                      ].join(':')
+                    : null;
+            await enqueue({
+                userId: notificationInstance.user_id,
+                kind: 'notification',
+                sourceUid: notificationInstance.uid,
+                dedupKey,
+                recipient: user.email,
+                ...renderEmail('notification', {
+                    title: notificationInstance.title,
+                    message:
+                        notificationInstance.message ||
+                        notificationInstance.title,
+                }),
+            });
         } catch (error) {
-            console.error('Failed to send email notification:', error);
+            // Keep the in-app notification even if the database outbox
+            // cannot be written. SMTP failures are handled by the queue.
+            console.error('Failed to queue email notification:', error);
         }
     }
 

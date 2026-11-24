@@ -1,10 +1,10 @@
 ###############
 # BUILD STAGE #
 ###############
-# Runs on the build host's own architecture: only the compiled frontend and
-# static assets leave this stage, and they do not depend on the target CPU.
-# Building them under QEMU for arm64 made the full npm install time out.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
+# Build on the Docker host's default architecture. Portainer's classic Docker
+# builder does not inject BuildKit's automatic BUILDPLATFORM argument.
+# For cross-architecture builds, use buildx instead.
+FROM node:22-alpine AS builder
 
 RUN apk add --no-cache \
     python3 \

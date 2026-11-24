@@ -5,6 +5,13 @@
 const { getConfig } = require('../config/config');
 
 const DEFAULT_PREFERENCES = {
+    inboxCreated: {
+        inApp: false,
+        email: false,
+        push: false,
+        telegram: false,
+        apprise: false,
+    },
     dueTasks: {
         inApp: true,
         email: false,
@@ -140,6 +147,14 @@ function shouldSendTelegramNotification(user, notificationType) {
     return prefs[prefKey].telegram === true;
 }
 
+// Email is opt-in for each notification type (including Inbox capture).
+function shouldSendEmailNotification(user, notificationType) {
+    if (!user || !user.notification_preferences) return false;
+    const prefKey =
+        NOTIFICATION_TYPE_MAPPING[notificationType] || notificationType;
+    return user.notification_preferences[prefKey]?.email === true;
+}
+
 // Push is opt-in per type, like Telegram: off unless the user turned it on.
 function shouldSendPushNotification(user, notificationType) {
     if (!user || !user.notification_preferences) {
@@ -178,6 +193,9 @@ function shouldSendAppriseNotification(user, notificationType) {
 // Apprise are sent per notification.
 function reminderSources(user, notificationType) {
     const sources = [];
+    if (shouldSendEmailNotification(user, notificationType)) {
+        sources.push('email');
+    }
     if (shouldSendPushNotification(user, notificationType)) {
         sources.push('push');
     }
@@ -191,6 +209,9 @@ function reminderSources(user, notificationType) {
 // Notification.createNotification for one preference key.
 function deliverySources(user, notificationType) {
     const sources = [];
+    if (shouldSendEmailNotification(user, notificationType)) {
+        sources.push('email');
+    }
     if (shouldSendTelegramNotification(user, notificationType)) {
         sources.push('telegram');
     }
@@ -264,6 +285,7 @@ module.exports = {
     shouldSendInAppNotification,
     shouldSendTelegramNotification,
     shouldSendPushNotification,
+    shouldSendEmailNotification,
     shouldSendAppriseNotification,
     deliverySources,
     reminderSources,

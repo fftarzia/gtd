@@ -1,9 +1,15 @@
+# GTDdo
+
+**GTDdo** è il fork di [tududi](https://github.com/chrisvel/tududi) dedicato alla gestione di attività e progetti ispirata al metodo **Getting Things Done (GTD)**.
+
+Questo repository conserva il codice e la licenza MIT del progetto originale. Il nuovo nome riguarda inizialmente l’interfaccia e la PWA; nomi delle API, variabili d’ambiente e identificativi tecnici restano compatibili con tududi. L’integrazione Android «Nota rapida» è una funzionalità prevista per il fork.
+
+La documentazione tecnica e i collegamenti ai servizi del progetto originale riportati di seguito sono mantenuti a scopo di riferimento e attribuzione.
+
+---
+
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/wide-logo-light.png">
-    <source media="(prefers-color-scheme: light)" srcset="public/wide-logo-dark.png">
-    <img src="public/wide-logo-light.png" alt="tududi" width="400">
-  </picture>
+  <img src="public/gtddo-wordmark-dark.svg" alt="GTDdo" width="400">
 </p>
 
 <p align="center">

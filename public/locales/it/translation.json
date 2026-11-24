@@ -1756,7 +1756,7 @@
     }
   },
   "navbar": {
-    "appName": "tududi",
+    "appName": "GTDdo",
     "quickInboxCapture": "Cattura Rapida della Posta in Arrivo",
     "userMenu": "Menu Utente",
     "collapseSidebar": "Riduci Barra Laterale",
@@ -1860,7 +1860,7 @@
     "version": "Versione",
     "description": "Gestione delle attività self-hosted con organizzazione gerarchica e supporto multilingue. Costruito con amore per gli appassionati di produttività.",
     "madeWithLove": "Fatto con amore",
-    "appreciation": "Grazie per utilizzare tududi! Il tuo supporto aiuta a mantenere vivo e in crescita questo progetto. Se lo trovi utile, considera di supportare lo sviluppo.",
+    "appreciation": "GTDdo è un fork indipendente di tududi. I collegamenti qui sotto sostengono il progetto open source originale.",
     "supportDevelopment": "Supporta lo sviluppo",
     "community": "Comunità",
     "viewOnGitHub": "Visualizza su GitHub",
@@ -2294,13 +2294,19 @@
     "table": {
       "type": "Tipo di Notifica"
     },
+    "email": {
+      "notConfigured": "SMTP non configurato",
+      "enabledHelp": "Scegli quali eventi inviare per email. Le nuove voci Inbox vengono spedite con il testo originale, senza riepiloghi.",
+      "disabledHelp": "Configura SMTP sul server per abilitare le notifiche email."
+    },
     "channels": {
-      "inApp": "Nell'app",
+      "inApp": "Webapp",
       "email": "Email",
       "push": "Push",
       "telegram": "Telegram"
     },
     "types": {
+      "inboxCreated": "Nuova voce Inbox",
       "dueTasks": "Compiti Scaduti",
       "overdueTasks": "Compiti In Ritardo",
       "deferUntil": "Rimanda Fino a",
@@ -2310,6 +2316,7 @@
       "habitReminders": "Promemoria abitudini"
     },
     "descriptions": {
+      "inboxCreated": "Invia via email il testo completo di ogni nuova voce della Inbox",
       "dueTasks": "Compiti che scadono entro 24 ore",
       "overdueTasks": "Compiti che hanno superato la loro data di scadenza",
       "deferUntil": "Compiti che sono ora disponibili per lavorare",
@@ -2332,7 +2339,7 @@
     },
     "info": {
       "title": "Nota:",
-      "message": "Le notifiche via Email e Push arriveranno presto. Le notifiche in-app e su Telegram sono attualmente disponibili."
+      "message": "Le notifiche email possono essere abilitate configurando SMTP."
     },
     "webhooks": {
       "events": {

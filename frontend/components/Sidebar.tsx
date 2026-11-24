@@ -223,10 +223,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <img
                                 src={getAssetPath(
                                     isDarkMode
-                                        ? 'wide-logo-light.png'
-                                        : 'wide-logo-dark.png'
+                                        ? 'gtddo-wordmark-light.svg'
+                                        : 'gtddo-wordmark-dark.svg'
                                 )}
-                                alt="tududi"
+                                alt="GTDdo"
                                 className="h-8 w-auto"
                             />
                         </Link>
