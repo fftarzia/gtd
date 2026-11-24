@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.fftarzia.gtddo.quickcapture.CapturePanel xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:background="@drawable/bg_capture_dialog" android:clipToOutline="true" android:orientation="vertical">
+    <ScrollView android:id="@+id/captureBody" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1" android:fillViewport="false">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:paddingTop="24dp" android:paddingStart="24dp" android:paddingEnd="24dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical">
+            <ImageView android:layout_width="28dp" android:layout_height="28dp"
+                android:src="@drawable/ic_quick_note" app:tint="@color/gtd_primary" android:importantForAccessibility="no" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:layout_marginStart="12dp" android:text="@string/app_name" android:textSize="20sp"
+                android:textStyle="bold" android:fontFamily="sans-serif" android:textColor="@color/gtd_on_surface" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/buttonClose"
+                style="@style/Widget.Material3.Button.TextButton.Icon" android:layout_width="48dp"
+                android:layout_height="48dp" android:minWidth="48dp" android:padding="12dp"
+                android:contentDescription="@string/close_note" app:icon="@drawable/ic_close"
+                app:iconPadding="0dp" app:iconSize="24dp" app:iconTint="@color/gtd_secondary_text" />
+        </LinearLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:layout_marginBottom="20dp" android:text="@string/quick_note_title"
+            android:textSize="28sp" android:textStyle="bold" android:textColor="@color/gtd_on_surface"
+            android:fontFamily="sans-serif" android:accessibilityHeading="true" />
+        <com.google.android.material.textfield.TextInputLayout android:id="@+id/noteField"
+            style="@style/GtdInput" android:layout_width="match_parent" android:layout_height="wrap_content"
+            app:hintEnabled="false" app:boxStrokeWidth="0dp" app:boxStrokeWidthFocused="1dp">
+            <com.google.android.material.textfield.TextInputEditText android:id="@+id/inputNote"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:minHeight="152dp" android:minLines="4" android:maxLines="8" android:gravity="top|start"
+                android:inputType="textCapSentences|textMultiLine" android:textSize="18sp" android:fontFamily="sans-serif" android:hint="@string/note_hint"
+                android:textColor="@color/gtd_on_surface" android:saveEnabled="false"
+                android:importantForAutofill="no" android:paddingStart="16dp" android:paddingEnd="16dp"
+                android:paddingTop="16dp" android:paddingBottom="16dp" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView android:id="@+id/statusText" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:textColor="@color/gtd_secondary_text" android:textSize="14sp"
+            android:accessibilityLiveRegion="polite" android:visibility="gone" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonSettings"
+            style="@style/GtdTextButton" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="@string/open_settings" android:visibility="gone" />
+    </LinearLayout>
+    </ScrollView>
+        <com.fftarzia.gtddo.quickcapture.CaptureActions android:id="@+id/captureActions" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:paddingTop="16dp" android:paddingBottom="24dp"
+            android:paddingStart="24dp" android:paddingEnd="24dp" android:gravity="end|center_vertical">
+            <com.google.android.material.button.MaterialButton android:id="@+id/buttonCancel"
+                style="@style/GtdTextButton" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/cancel" />
+            <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/buttonSaveNote"
+                style="@style/GtdButton" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="@string/save_note" android:singleLine="false" />
+        </com.fftarzia.gtddo.quickcapture.CaptureActions>
+</com.fftarzia.gtddo.quickcapture.CapturePanel>

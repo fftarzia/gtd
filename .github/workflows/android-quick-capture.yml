@@ -1,0 +1,60 @@
+name: Build GTDdo Android Quick Capture APK
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android-quick-capture/**'
+      - '.github/workflows/android-quick-capture.yml'
+  push:
+    paths:
+      - 'android-quick-capture/**'
+      - '.github/workflows/android-quick-capture.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out fork
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install Android 17 SDK with official Android CLI
+        run: |
+          set -euo pipefail
+          SDK_ARCHIVE="$RUNNER_TEMP/gtddo-sdk-tools.zip"
+          curl --fail --location --retry 3 'https://dl.google.com/android/repository/commandlinetools-linux-16111833_latest.zip' -o "$SDK_ARCHIVE"
+          echo "e025545c62a8e64c7559119566a569fb1dec5f60  $SDK_ARCHIVE" | sha1sum --check --strict
+          unzip -q "$SDK_ARCHIVE" -d "$RUNNER_TEMP/gtddo-sdk-tools"
+          "$RUNNER_TEMP/gtddo-sdk-tools/cmdline-tools/bin/android" --no-metrics --sdk="$ANDROID_HOME" sdk install 'platforms;android-37.0' 'build-tools;36.0.0'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Test Android 15 and 17, lint and build independent preview
+        working-directory: android-quick-capture
+        run: bash ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtddo-0.3.1-apk
+          path: android-quick-capture/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: Upload native screenshots and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gtddo-android-verification
+          path: |
+            android-quick-capture/app/build/reports/native-screenshots/
+            android-quick-capture/app/build/reports/tests/
+            android-quick-capture/app/build/reports/lint-results-debug.html
