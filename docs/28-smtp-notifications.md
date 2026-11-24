@@ -48,9 +48,11 @@ unchanged. After redeployment, the Email column becomes available. Use its
   service, including the web UI, REST API and the MCP `add_to_inbox` tool.
   Editing an existing Inbox entry does not send another email.
 - All Email preferences are **off by default**.
-- Sending failures are logged and do not roll back the Inbox capture.
-  Inbox email delivery currently does **not** have a persistent retry queue.
-  If the SMTP provider is unavailable, a delivery can be missed.
+- Inbox captures and their notification outbox entries are committed
+  atomically to PostgreSQL. SMTP errors do not roll back a saved capture.
+- Notification emails are retried automatically after SMTP failures or app
+  restarts. See [email notification retry queue](29-email-notification-retry-queue.md).
+  Permanently failed deliveries require operator investigation.
 
 The email sender is configured globally on the Docker app container. Each
 recipient is taken from the email address of their GTDdo user account.

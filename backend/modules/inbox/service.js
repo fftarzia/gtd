@@ -14,6 +14,7 @@ const { processInboxItem, parseAreaRefs } = require('./inboxProcessingService');
 const peopleService = require('../people/service');
 const attachments = require('./operations/attachments');
 const { notifyInboxCreated } = require('./emailNotification');
+const { sequelize } = require('../../models');
 
 // Items go out as plain objects with their files under `attachments`.
 async function withAttachments(items) {
@@ -75,15 +76,20 @@ class InboxService {
         const validatedSource = validateSource(source);
         const title = buildTitleFromContent(validatedContent);
 
-        const item = await inboxRepository.createForUser(userId, {
-            content: validatedContent,
-            title,
-            source: validatedSource,
-        });
-
-        // Never hold up or fail quick capture because SMTP is unavailable.
-        notifyInboxCreated(userId, validatedContent).catch((error) => {
-            console.error('Inbox email notification failed:', error);
+        // Persist the Inbox capture and its optional email outbox record
+        // atomically. SMTP is never contacted inside this transaction.
+        const item = await sequelize.transaction(async (transaction) => {
+            const created = await inboxRepository.createForUser(
+                userId,
+                {
+                    content: validatedContent,
+                    title,
+                    source: validatedSource,
+                },
+                { transaction }
+            );
+            await notifyInboxCreated(userId, created, { transaction });
+            return created;
         });
 
         return { ..._.pick(item, PUBLIC_ATTRIBUTES), attachments: [] };
