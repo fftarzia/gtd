@@ -1,20 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/gtd_primary</item>
+        <item name="colorOnPrimary">@color/gtd_on_primary</item>
+        <item name="colorSurface">@color/gtd_surface</item>
+        <item name="colorOnSurface">@color/gtd_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/gtd_secondary_text</item>
+        <item name="colorOutline">@color/gtd_outline</item>
+        <item name="colorError">@color/gtd_error</item>
+        <item name="android:colorBackground">@color/gtd_background</item>
+        <item name="android:windowBackground">@color/gtd_background</item>
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#4459BF</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:navigationBarColor">#FAFAFA</item>
-        <item name="android:statusBarColor">#FAFAFA</item>
+        <item name="fontFamily">sans-serif</item>
         <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
     </style>
-    <style name="CaptureDialogTheme" parent="android:style/Theme.Material.Light.Dialog">
+    <style name="CaptureDialogTheme" parent="AppTheme">
+        <item name="android:windowIsFloating">true</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowMinWidthMinor">92%</item>
-        <item name="android:windowMinWidthMajor">70%</item>
         <item name="android:windowBackground">@drawable/bg_capture_dialog</item>
+        <item name="android:windowCloseOnTouchOutside">false</item>
         <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.45</item>
-        <item name="android:colorAccent">#4459BF</item>
+        <item name="android:backgroundDimAmount">0.55</item>
+        <item name="android:windowMinWidthMajor">0dp</item>
+        <item name="android:windowMinWidthMinor">0dp</item>
+    </style>
+    <style name="GtdInput" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@color/gtd_field</item>
+        <item name="boxCornerRadiusTopStart">16dp</item>
+        <item name="boxCornerRadiusTopEnd">16dp</item>
+        <item name="boxCornerRadiusBottomStart">16dp</item>
+        <item name="boxCornerRadiusBottomEnd">16dp</item>
+    </style>
+    <style name="GtdButton" parent="Widget.Material3.Button">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">28dp</item>
+    </style>
+    <style name="GtdTextButton" parent="Widget.Material3.Button.TextButton">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="fontFamily">sans-serif</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">16sp</item>
     </style>
 </resources>

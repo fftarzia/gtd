@@ -1,0 +1,10 @@
+The Android companion is a community application for the GTDdo fork of tududi.
+It is not an official Google, Samsung or tududi Android application.
+
+The task/check and close vector paths are from Google Material Design Icons,
+Copyright Google LLC, licensed under Apache License 2.0:
+https://github.com/google/material-design-icons
+https://www.apache.org/licenses/LICENSE-2.0
+
+The task/check icon is used in an adaptive GTDdo launcher icon and as a
+monochrome system tile glyph. System-provided icon masking and tinting apply.

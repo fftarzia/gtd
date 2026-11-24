@@ -47,6 +47,35 @@ public final class SecureSettings {
         return prefs.contains(TOKEN);
     }
 
+    public boolean isConfigured() {
+        return !getServerUrl().isEmpty() && hasToken();
+    }
+
+    public AppConfiguration readConfiguration() throws GeneralSecurityException, IOException {
+        return new AppConfiguration(getServerUrl(), readToken(), readCloudflareCredentials());
+    }
+
+    /** Encrypt everything before one commit: never mix an old server with new credentials. */
+    public void saveConfiguration(AppConfiguration configuration) throws GeneralSecurityException, IOException {
+        String token = encrypt(configuration.apiToken);
+        String id = encrypt(configuration.cloudflare.getClientId());
+        String secret = encrypt(configuration.cloudflare.getClientSecret());
+        SharedPreferences.Editor editor = prefs.edit().putString(SERVER_URL, configuration.serverUrl)
+                .putString(TOKEN, token);
+        if (configuration.cloudflare.isConfigured()) {
+            editor.putString(CF_CLIENT_ID, id).putString(CF_CLIENT_SECRET, secret);
+        } else {
+            editor.remove(CF_CLIENT_ID).remove(CF_CLIENT_SECRET);
+        }
+        if (!editor.commit()) throw new IOException("Impossibile salvare la configurazione.");
+    }
+
+    public void clearDraftIfEquals(String sent) throws GeneralSecurityException, IOException {
+        synchronized (SecureSettings.class) {
+            if (readDraft().equals(sent)) saveDraft("");
+        }
+    }
+
     public void saveToken(String value) throws GeneralSecurityException, IOException {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException("Token vuoto.");
@@ -92,12 +121,14 @@ public final class SecureSettings {
     }
 
     public void saveDraft(String draft) throws GeneralSecurityException, IOException {
+        synchronized (SecureSettings.class) {
         if (draft == null || draft.isEmpty()) {
             if (!prefs.edit().remove(DRAFT).commit()) {
                 throw new IOException("Impossibile eliminare la bozza.");
             }
         } else {
             writeEncrypted(DRAFT, draft);
+        }
         }
     }
 

@@ -19,7 +19,7 @@ public final class ApiClient {
         HttpURLConnection conn = open(baseUrl, token, cloudflare, "POST");
         try {
             JSONObject body = new JSONObject();
-            body.put("content", content.trim());
+            body.put("content", content);
             body.put("source", "android_quick_tile");
             byte[] payload = body.toString().getBytes(StandardCharsets.UTF_8);
             conn.setDoOutput(true);
@@ -30,7 +30,7 @@ public final class ApiClient {
             }
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_CREATED) {
-                throw new IOException(errorFor(code));
+                throw new HttpError(errorFor(code));
             }
         } finally {
             conn.disconnect();
@@ -42,7 +42,11 @@ public final class ApiClient {
         try {
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
-                throw new IOException(errorFor(code));
+                throw new HttpError(errorFor(code));
+            }
+            String type = conn.getContentType();
+            if (type == null || !type.toLowerCase(java.util.Locale.ROOT).contains("application/json")) {
+                throw new HttpError("Il server non ha restituito l'API GTDdo. Controlla l'indirizzo e Cloudflare Access.");
             }
         } finally {
             conn.disconnect();
@@ -70,11 +74,15 @@ public final class ApiClient {
 
     private static String errorFor(int status) {
         if (status == 401) return "Token API non valido o scaduto (HTTP 401).";
-        if (status == 403) return "L'utente non e' autorizzato (HTTP 403).";
+        if (status == 403) return "Accesso negato (HTTP 403). Verifica il token GTDdo e le credenziali Cloudflare.";
         if (status == 404) return "API Inbox non trovata: verifica l'URL e la versione di GTDdo (HTTP 404).";
         if (status == 429) return "Troppe richieste. Riprova fra poco (HTTP 429).";
         if (status >= 300 && status < 400) return "Reindirizzamento HTTP non consentito. Verifica credenziali e criteri Cloudflare Access (HTTP " + status + ").";
         if (status >= 500) return "Errore del server GTDdo (HTTP " + status + ").";
         return "Il server non ha accettato la richiesta (HTTP " + status + ").";
+    }
+
+    public static final class HttpError extends IOException {
+        HttpError(String message) { super(message); }
     }
 }

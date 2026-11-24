@@ -1,197 +1,218 @@
 package com.fftarzia.gtddo.quickcapture;
 
-import android.app.Activity;
 import android.app.StatusBarManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Button;
+import android.text.InputType;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-public final class MainActivity extends Activity {
+public final class MainActivity extends AppCompatActivity {
     private SecureSettings settings;
-    private EditText serverInput;
-    private EditText tokenInput;
-    private TextView tokenState;
-    private EditText cfClientIdInput;
-    private EditText cfClientSecretInput;
-    private TextView cfCredentialsState;
-    private TextView statusText;
-    private Button testButton;
-    private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private SettingsViewModel model;
+    private EditText serverInput, tokenInput, idInput, secretInput;
+    private MaterialSwitch useCloudflare;
+    private final ActivityResultLauncher<String> exportFile = registerForActivityResult(
+            new ActivityResultContracts.CreateDocument("application/octet-stream"), uri -> model.writeExport(uri));
+    private final ActivityResultLauncher<String[]> importFile = registerForActivityResult(
+            new ActivityResultContracts.OpenDocument(), uri -> model.readImport(uri));
 
-    @Override
-    protected void onCreate(Bundle state) {
+    @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         setContentView(R.layout.activity_main);
         InsetUtil.apply(findViewById(R.id.root));
         settings = new SecureSettings(this);
+        model = new ViewModelProvider(this).get(SettingsViewModel.class);
         serverInput = findViewById(R.id.inputServerUrl);
         tokenInput = findViewById(R.id.inputApiToken);
-        tokenState = findViewById(R.id.tokenState);
-        cfClientIdInput = findViewById(R.id.inputCfClientId);
-        cfClientSecretInput = findViewById(R.id.inputCfClientSecret);
-        cfCredentialsState = findViewById(R.id.cfCredentialsState);
-        statusText = findViewById(R.id.statusText);
-        testButton = findViewById(R.id.buttonTestConnection);
-        serverInput.setText(settings.getServerUrl());
-        refreshTokenState();
-
-        findViewById(R.id.buttonSaveSettings).setOnClickListener(v -> saveConfiguration());
-        findViewById(R.id.buttonClearCloudflare).setOnClickListener(v -> {
-            try {
-                settings.clearCloudflareCredentials();
-                cfClientIdInput.setText("");
-                cfClientSecretInput.setText("");
-                refreshTokenState();
-                statusText.setText("Credenziali Cloudflare eliminate dal telefono.");
-            } catch (Exception error) {
-                statusText.setText("Eliminazione non riuscita: " + safeError(error));
-            }
+        idInput = findViewById(R.id.inputCfClientId);
+        secretInput = findViewById(R.id.inputCfClientSecret);
+        useCloudflare = findViewById(R.id.useCloudflare);
+        useCloudflare.setOnCheckedChangeListener((button, checked) ->
+                findViewById(R.id.cloudflareFields).setVisibility(checked ? View.VISIBLE : View.GONE));
+        if (model.form == null) {
+            serverInput.setText(settings.getServerUrl());
+            useCloudflare.setChecked(settings.hasCloudflareCredentials());
+        } else {
+            serverInput.setText(model.form[0]); tokenInput.setText(model.form[1]);
+            idInput.setText(model.form[2]); secretInput.setText(model.form[3]);
+            useCloudflare.setChecked(Boolean.parseBoolean(model.form[4]));
+        }
+        findViewById(R.id.buttonOpenCapture).setOnClickListener(v -> startActivity(new Intent(this, QuickCaptureActivity.class)));
+        findViewById(R.id.buttonConfigure).setOnClickListener(v -> {
+            model.formExpanded = !model.formExpanded;
+            findViewById(R.id.configurationForm).setVisibility(model.formExpanded ? View.VISIBLE : View.GONE);
         });
-        testButton.setOnClickListener(v -> testConnection());
-        findViewById(R.id.buttonOpenCapture).setOnClickListener(
-                v -> startActivity(new Intent(this, QuickCaptureActivity.class)));
-        findViewById(R.id.buttonAddTile).setOnClickListener(v -> requestQuickSettingsTile());
+        findViewById(R.id.buttonSaveSettings).setOnClickListener(v -> saveConfiguration());
+        findViewById(R.id.buttonTestConnection).setOnClickListener(v -> model.verify(null, false));
+        findViewById(R.id.buttonAddTile).setOnClickListener(v -> requestTile());
+        findViewById(R.id.buttonTileHelp).setOnClickListener(v -> tileHelp());
+        findViewById(R.id.buttonExport).setOnClickListener(v -> passwordDialog(true));
+        findViewById(R.id.buttonImport).setOnClickListener(v -> importFile.launch(new String[]{"*/*"}));
+        model.state.observe(this, this::renderState);
+        refreshConfiguration();
     }
-
-    private void refreshTokenState() {
-        tokenState.setText(settings.hasToken()
-                ? "Token salvato in modo cifrato. Lascia vuoto il campo per mantenerlo."
-                : "Nessun token salvato. Creane uno nelle impostazioni API di GTDdo.");
-        cfCredentialsState.setText(settings.hasCloudflareCredentials()
-                ? "Cloudflare Access attivo. Entrambe le credenziali sono cifrate. Lascia i campi vuoti per mantenerle."
-                : "Cloudflare Access non configurato. Compila entrambi i campi solo per il dominio protetto.");
+    private void refreshConfiguration() {
+        boolean configured = settings.isConfigured();
+        ((TextView) findViewById(R.id.connectionState)).setText(configured ? R.string.configured : R.string.not_configured);
+        ((TextView) findViewById(R.id.serverState)).setText(settings.getServerUrl());
+        ((MaterialButton) findViewById(R.id.buttonConfigure)).setText(configured ? R.string.configure : R.string.configure_first);
+        findViewById(R.id.configurationForm).setVisibility(model.formExpanded ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonTestConnection).setVisibility(configured ? View.VISIBLE : View.GONE);
+        findViewById(R.id.buttonExport).setVisibility(configured ? View.VISIBLE : View.GONE);
     }
-
+    private void renderState(SettingsViewModel.State state) {
+        ((TextView) findViewById(R.id.statusText)).setText(state.message);
+        for (int id : new int[]{R.id.buttonImport, R.id.buttonExport, R.id.buttonSaveSettings,
+                R.id.buttonTestConnection, R.id.buttonConfigure, R.id.inputServerUrl, R.id.inputApiToken,
+                R.id.inputCfClientId, R.id.inputCfClientSecret, R.id.useCloudflare}) findViewById(id).setEnabled(!model.busy);
+        if (state.kind == SettingsViewModel.Kind.SAVED) {
+            tokenInput.setText(""); idInput.setText(""); secretInput.setText("");
+            serverInput.setText(settings.getServerUrl());
+            useCloudflare.setChecked(settings.hasCloudflareCredentials());
+            model.form = null;
+            model.formExpanded = false;
+            refreshConfiguration();
+        } else if (state.kind == SettingsViewModel.Kind.EXPORT_READY && !model.exportPickerOpen) {
+            model.exportPickerOpen = true;
+            exportFile.launch("GTDdo-configurazione.gtddo");
+        } else if (state.kind == SettingsViewModel.Kind.PASSWORD_NEEDED && !model.dialogOpen) passwordDialog(false);
+        else if (state.kind == SettingsViewModel.Kind.IMPORT_READY && !model.dialogOpen) confirmImport();
+    }
+    private AppConfiguration candidate() throws Exception {
+        String url = EndpointUrl.normalize(serverInput.getText().toString());
+        boolean sameServer = url.equals(settings.getServerUrl());
+        String token = tokenInput.getText().toString().trim();
+        if (token.isEmpty()) {
+            if (!sameServer || !settings.hasToken()) throw new IllegalArgumentException("Inserisci il token personale per questo server.");
+            token = settings.readToken();
+        }
+        CloudflareCredentials cloudflare = new CloudflareCredentials("", "");
+        if (useCloudflare.isChecked()) {
+            String id = idInput.getText().toString();
+            String secret = secretInput.getText().toString();
+            if (id.trim().isEmpty() && secret.trim().isEmpty()) {
+                if (!sameServer || !settings.hasCloudflareCredentials())
+                    throw new IllegalArgumentException("Inserisci entrambe le credenziali Cloudflare per questo server.");
+                cloudflare = settings.readCloudflareCredentials();
+            } else cloudflare = new CloudflareCredentials(id, secret);
+        }
+        return new AppConfiguration(url, token, cloudflare);
+    }
     private void saveConfiguration() {
         try {
-            String url = EndpointUrl.normalize(serverInput.getText().toString());
-            String newToken = tokenInput.getText().toString().trim();
-            CloudflareCredentials newCloudflare = new CloudflareCredentials(
-                    cfClientIdInput.getText().toString(),
-                    cfClientSecretInput.getText().toString());
-            if (newToken.isEmpty() && !settings.hasToken()) {
-                statusText.setText("Inserisci un token API personale.");
-                return;
-            }
-            if (newToken.isEmpty() && !settings.getServerUrl().isEmpty()
-                    && !url.equals(settings.getServerUrl())) {
-                statusText.setText("Se cambi server, inserisci anche un token nuovo.");
-                return;
-            }
-            if (!url.equals(settings.getServerUrl())
-                    && settings.hasCloudflareCredentials() && !newCloudflare.isConfigured()) {
-                statusText.setText("Se cambi server, reinserisci entrambi i dati Cloudflare oppure eliminali.");
-                return;
-            }
-            if (!newToken.isEmpty()) settings.saveToken(newToken);
-            if (newCloudflare.isConfigured()) settings.saveCloudflareCredentials(newCloudflare);
-            settings.saveServerUrl(url);
-            tokenInput.setText("");
-            cfClientIdInput.setText("");
-            cfClientSecretInput.setText("");
-            serverInput.setText(url);
-            refreshTokenState();
-            statusText.setText("Configurazione salvata. Usa Verifica connessione.");
+            AppConfiguration config = candidate();
+            if (!settings.getServerUrl().isEmpty() && !config.serverUrl.equals(settings.getServerUrl())) {
+                new MaterialAlertDialogBuilder(this).setTitle(R.string.change_server_title)
+                        .setMessage(getString(R.string.change_server_message, config.serverUrl))
+                        .setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.continue_action, (d, w) -> model.verify(config, true)).show();
+            } else if (settings.hasCloudflareCredentials() && !config.cloudflare.isConfigured()) {
+                new MaterialAlertDialogBuilder(this).setTitle(R.string.disable_access_title)
+                        .setMessage(R.string.disable_access_message).setNegativeButton(R.string.cancel, null)
+                        .setPositiveButton(R.string.continue_action, (d, w) -> model.verify(config, true)).show();
+            } else model.verify(config, true);
         } catch (Exception error) {
-            statusText.setText("Configurazione non salvata: " + safeError(error));
+            model.info(error instanceof IllegalArgumentException ? error.getMessage()
+                    : "Credenziali salvate non leggibili. Reinseriscile senza disinstallare l’app.");
         }
     }
-
-    private void testConnection() {
-        final String url = settings.getServerUrl();
-        final String token;
-        final CloudflareCredentials cloudflare;
-        try {
-            token = settings.readToken();
-            cloudflare = settings.readCloudflareCredentials();
-            if (url.isEmpty() || token.isEmpty()) {
-                statusText.setText("Salva prima l'indirizzo e il token.");
-                return;
+    private void passwordDialog(boolean exporting) {
+        if (model.busy || model.dialogOpen) return;
+        model.dialogOpen = true;
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        int padding = Math.round(24 * getResources().getDisplayMetrics().density);
+        form.setPadding(padding, padding / 2, padding, 0);
+        TextInputEditText first = passwordField(form, R.string.backup_password);
+        TextInputEditText second = exporting ? passwordField(form, R.string.backup_password_confirm) : null;
+        TextView helper = new TextView(this);
+        helper.setText(R.string.backup_password_help); form.addView(helper);
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this)
+                .setTitle(exporting ? R.string.export_title : R.string.import_title).setView(form)
+                .setNegativeButton(R.string.cancel, (d, w) -> { if (!exporting) model.cancelImport(); })
+                .setPositiveButton(R.string.continue_action, null).create();
+        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String password = first.getText() == null ? "" : first.getText().toString();
+            if (password.length() < 12 || password.length() > 256) { first.setError("Utilizza da 12 a 256 caratteri."); return; }
+            if (exporting && (second.getText() == null || !password.equals(second.getText().toString()))) {
+                second.setError("Le password non coincidono."); return;
             }
-        } catch (Exception error) {
-            statusText.setText("Token non leggibile: salva nuovamente il token.");
-            return;
-        }
-        testButton.setEnabled(false);
-        statusText.setText("Verifica in corso...");
-        worker.execute(() -> {
-            String response;
-            try {
-                ApiClient.verify(url, token, cloudflare);
-                response = "Connessione OK. Puoi usare Nota rapida.";
-            } catch (Exception error) {
-                response = "Connessione non riuscita: " + safeError(error);
-            }
-            final String message = response;
-            runOnUiThread(() -> {
-                if (isFinishing() || isDestroyed()) return;
-                testButton.setEnabled(true);
-                statusText.setText(message);
-            });
-        });
+            char[] chars = password.toCharArray();
+            first.setText(""); if (second != null) second.setText("");
+            dialog.dismiss();
+            if (exporting) model.prepareExport(chars); else model.decryptImport(chars);
+        }));
+        dialog.setOnCancelListener(d -> { if (!exporting) model.cancelImport(); });
+        dialog.setOnDismissListener(d -> model.dialogOpen = false);
+        dialog.show();
+        dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
-
-    private void requestQuickSettingsTile() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            Toast.makeText(this, "Aggiungi Nota rapida da Modifica nelle Impostazioni rapide.",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-        StatusBarManager statusBar = getSystemService(StatusBarManager.class);
-        if (statusBar == null) {
-            statusText.setText("Apri Modifica nelle Impostazioni rapide e aggiungi Nota rapida.");
-            return;
-        }
+    private TextInputEditText passwordField(LinearLayout form, int hint) {
+        TextInputLayout field = new TextInputLayout(this);
+        field.setHint(hint); field.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
+        TextInputEditText input = new TextInputEditText(field.getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        input.setSingleLine(true); input.setSaveEnabled(false); input.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+        field.addView(input); form.addView(field);
+        return input;
+    }
+    private void confirmImport() {
+        AppConfiguration config = model.imported;
+        if (config == null) return;
+        model.dialogOpen = true;
+        AlertDialog dialog = new MaterialAlertDialogBuilder(this).setTitle(R.string.import_confirm_title)
+                .setMessage(getString(R.string.import_confirm_message, config.serverUrl,
+                        getString(config.cloudflare.isConfigured() ? R.string.enabled : R.string.disabled)))
+                .setNegativeButton(R.string.cancel, (d, w) -> model.cancelImport())
+                .setPositiveButton(R.string.import_confirm, (d, w) -> model.verify(config, true)).create();
+        dialog.setOnDismissListener(d -> model.dialogOpen = false);
+        dialog.setOnCancelListener(d -> model.cancelImport());
+        dialog.show();
+    }
+    private void tileHelp() {
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.tile_help).setMessage(R.string.tile_help_message)
+                .setPositiveButton(R.string.ok, null).show();
+    }
+    private void requestTile() {
+        if (Build.VERSION.SDK_INT < 33) { tileHelp(); return; }
+        StatusBarManager bar = getSystemService(StatusBarManager.class);
+        if (bar == null) { tileHelp(); return; }
         try {
-            statusBar.requestAddTileService(
-                    new ComponentName(this, QuickNoteTileService.class),
-                    getString(R.string.tile_label),
-                    Icon.createWithResource(this, R.drawable.ic_quick_note),
-                    getMainExecutor(),
-                    result -> {
+            bar.requestAddTileService(new ComponentName(this, QuickNoteTileService.class), getString(R.string.tile_label),
+                    Icon.createWithResource(this, R.drawable.ic_quick_note), getMainExecutor(), result -> {
                         if (isFinishing() || isDestroyed()) return;
-                        if (result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED) {
-                            statusText.setText("Pulsante Nota rapida aggiunto.");
-                        } else if (result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED) {
-                            statusText.setText("Nota rapida e' gia' presente nelle Impostazioni rapide.");
-                        } else {
-                            statusText.setText("Per aggiungere il pulsante usa Modifica nelle Impostazioni rapide.");
-                        }
+                        if (result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED
+                                || result == StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED) {
+                            model.info("GTDdo è disponibile nelle Impostazioni rapide. Usa Modifica per portarlo accanto a Wi-Fi e torcia.");
+                        } else tileHelp();
                     });
-        } catch (RuntimeException error) {
-            statusText.setText("Richiesta non disponibile. Aggiungi Nota rapida dal menu Modifica.");
-        }
+        } catch (RuntimeException error) { tileHelp(); }
     }
-
-    static String safeError(Exception error) {
-        if (error instanceof java.net.UnknownHostException) {
-            return "Server non raggiungibile: controlla DNS o VPN.";
-        }
-        if (error instanceof javax.net.ssl.SSLException) {
-            return "Connessione TLS non valida. Serve un certificato HTTPS attendibile.";
-        }
-        if (error instanceof java.net.SocketTimeoutException) {
-            return "Timeout: il server non risponde.";
-        }
-        if (error instanceof java.net.ConnectException) {
-            return "Connessione rifiutata: controlla il server o la rete.";
-        }
-        String message = error.getMessage();
-        return message == null ? "Errore imprevisto." : message;
+    @Override protected void onPause() {
+        model.form = new String[]{serverInput.getText().toString(), tokenInput.getText().toString(),
+                idInput.getText().toString(), secretInput.getText().toString(), Boolean.toString(useCloudflare.isChecked())};
+        super.onPause();
     }
-
-    @Override
-    protected void onDestroy() {
-        worker.shutdown();
+    @Override protected void onDestroy() {
+        if (isChangingConfigurations()) model.dialogOpen = false;
         super.onDestroy();
     }
 }

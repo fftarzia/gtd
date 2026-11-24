@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="gtd_primary">#CDC0FF</color>
+    <color name="gtd_on_primary">#302653</color>
+    <color name="gtd_background">#15121C</color>
+    <color name="gtd_surface">#2A2635</color>
+    <color name="gtd_field">#454052</color>
+    <color name="gtd_on_surface">#F0EBF7</color>
+    <color name="gtd_secondary_text">#CCC4D6</color>
+    <color name="gtd_outline">#9890A4</color>
+    <color name="gtd_error">#FFB4AB</color>
+</resources>

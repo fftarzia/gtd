@@ -1,142 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#FAFAFA">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/settings_title"
-            android:textSize="26sp"
-            android:textColor="#202124"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Inserisci l'URL HTTPS di GTDdo e il suo token personale. Se utilizzi Cloudflare Access, aggiungi anche le credenziali del tuo Service Token. Tutti i segreti vengono cifrati sul dispositivo."
-            android:textColor="#555555"
-            android:layout_marginBottom="14dp" />
-
-        <EditText
-            android:id="@+id/inputServerUrl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/server_url"
-            android:inputType="textUri"
-            android:singleLine="true"
-            
-            android:textSize="16sp" />
-
-        <EditText
-            android:id="@+id/inputApiToken"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/api_token"
-            android:inputType="textPassword"
-            android:singleLine="true"
-            android:importantForAutofill="no"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tokenState"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:textColor="#555555"
-            android:layout_marginBottom="10dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cloudflare_title"
-            android:textStyle="bold"
-            android:textColor="#202124"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="5dp" />
-
-        <EditText
-            android:id="@+id/inputCfClientId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/cloudflare_client_id"
-            android:inputType="textPassword"
-            android:singleLine="true"
-            android:importantForAutofill="no"
-            android:textSize="16sp" />
-
-        <EditText
-            android:id="@+id/inputCfClientSecret"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/cloudflare_client_secret"
-            android:inputType="textPassword"
-            android:singleLine="true"
-            android:importantForAutofill="no"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/cfCredentialsState"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:textColor="#555555"
-            android:layout_marginBottom="8dp" />
-
-        <Button
-            android:id="@+id/buttonClearCloudflare"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/cloudflare_clear" />
-
-        <Button
-            android:id="@+id/buttonSaveSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/save_settings" />
-
-        <Button
-            android:id="@+id/buttonTestConnection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/test_connection" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#DDDDDD"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp" />
-
-        <Button
-            android:id="@+id/buttonAddTile"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/add_tile" />
-
-        <Button
-            android:id="@+id/buttonOpenCapture"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/open_capture" />
-
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#454545"
-            android:textSize="14sp"
-            android:layout_marginTop="20dp" />
-
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="24dp" android:orientation="vertical">
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/app_name"
+            android:textSize="30sp" android:textStyle="bold" android:textColor="@color/gtd_on_surface" android:accessibilityHeading="true" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"
+            android:text="@string/settings_title" android:textSize="18sp" android:textColor="@color/gtd_secondary_text" />
+        <TextView android:id="@+id/connectionState" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="24dp" android:textSize="16sp" android:textColor="@color/gtd_on_surface" />
+        <TextView android:id="@+id/serverState" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="4dp" android:textSize="14sp" android:textColor="@color/gtd_secondary_text" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonOpenCapture" style="@style/GtdButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp"
+            android:text="@string/open_capture" app:icon="@drawable/ic_quick_note" app:iconGravity="textStart" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonAddTile" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:layout_marginTop="12dp"
+            android:text="@string/add_tile" android:singleLine="false" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonTileHelp" style="@style/GtdTextButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/tile_help" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gtd_outline" android:alpha="0.25" android:layout_marginVertical="20dp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonImport" style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:text="@string/import_backup" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonExport" style="@style/GtdTextButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/export_backup" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp"
+            android:text="@string/backup_help" android:textSize="14sp" android:textColor="@color/gtd_secondary_text" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonConfigure" style="@style/GtdTextButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/configure" />
+        <LinearLayout android:id="@+id/configurationForm" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:visibility="gone">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/configuration_help"
+                android:textSize="14sp" android:textColor="@color/gtd_secondary_text" android:layout_marginBottom="16dp" />
+            <com.google.android.material.textfield.TextInputLayout style="@style/GtdInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/server_url">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/inputServerUrl" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="textUri" android:singleLine="true" android:importantForAutofill="no" android:saveEnabled="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputLayout style="@style/GtdInput" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" android:hint="@string/api_token" app:endIconMode="password_toggle" app:helperText="@string/keep_token">
+                <com.google.android.material.textfield.TextInputEditText android:id="@+id/inputApiToken" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:inputType="textPassword" android:singleLine="true" android:importantForAutofill="no" android:saveEnabled="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/useCloudflare" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:minHeight="64dp" android:text="@string/cloudflare_title" android:layout_marginTop="12dp" android:saveEnabled="false" />
+            <LinearLayout android:id="@+id/cloudflareFields" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <com.google.android.material.textfield.TextInputLayout style="@style/GtdInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/cloudflare_client_id">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/inputCfClientId" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:inputType="textPassword" android:singleLine="true" android:importantForAutofill="no" android:saveEnabled="false" />
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout style="@style/GtdInput" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:hint="@string/cloudflare_client_secret" app:endIconMode="password_toggle" app:helperText="@string/keep_cloudflare">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/inputCfClientSecret" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:inputType="textPassword" android:singleLine="true" android:importantForAutofill="no" android:saveEnabled="false" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButton android:id="@+id/buttonSaveSettings" style="@style/GtdButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@string/save_settings" />
+        </LinearLayout>
+        <com.google.android.material.button.MaterialButton android:id="@+id/buttonTestConnection" style="@style/GtdTextButton"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/test_connection" />
+        <TextView android:id="@+id/statusText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp"
+            android:textColor="@color/gtd_on_surface" android:textSize="14sp" android:accessibilityLiveRegion="polite" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp"
+            android:text="@string/version_label" android:textSize="12sp" android:textColor="@color/gtd_secondary_text" />
     </LinearLayout>
 </ScrollView>

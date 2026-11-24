@@ -14,8 +14,11 @@ public final class QuickNoteTileService extends TileService {
         super.onStartListening();
         Tile tile = getQsTile();
         if (tile != null) {
-            tile.setState(Tile.STATE_ACTIVE);
+            // This is an action, not a toggle permanently switched on.
+            tile.setState(Tile.STATE_INACTIVE);
             tile.setLabel(getString(R.string.tile_label));
+            tile.setContentDescription(getString(R.string.open_capture));
+            if (Build.VERSION.SDK_INT >= 29) tile.setSubtitle(getString(R.string.quick_note_title));
             tile.setIcon(Icon.createWithResource(this, R.drawable.ic_quick_note));
             tile.updateTile();
         }
@@ -33,7 +36,7 @@ public final class QuickNoteTileService extends TileService {
 
     private void openCapture() {
         Intent intent = new Intent(this, QuickCaptureActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             PendingIntent pendingIntent = PendingIntent.getActivity(
                     this, 1001, intent,
@@ -41,7 +44,14 @@ public final class QuickNoteTileService extends TileService {
             startActivityAndCollapse(pendingIntent);
         } else {
             // Legacy overload works on Android 8-13 only.
-            startActivityAndCollapse(intent);
+            openLegacyCapture(intent);
         }
+    }
+
+    @android.annotation.SuppressLint("StartActivityAndCollapseDeprecated")
+    private void openLegacyCapture(Intent intent) {
+        // Called only on API 26–33, where the PendingIntent overload does not exist.
+        // Android 14+ always takes the modern branch above.
+        startActivityAndCollapse(intent);
     }
 }
