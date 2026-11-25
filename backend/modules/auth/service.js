@@ -34,7 +34,10 @@ const {
 
 class AuthService {
     getVersion() {
-        return { version: packageJson.version };
+        return {
+            version: packageJson.version,
+            forkVersion: packageJson.forkVersion,
+        };
     }
 
     async getRegistrationStatus() {

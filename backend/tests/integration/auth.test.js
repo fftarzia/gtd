@@ -4,6 +4,19 @@ require('../../models');
 const { createTestUser } = require('../helpers/testUtils');
 
 describe('Auth Routes', () => {
+    describe('GET /api/version', () => {
+        it('reports upstream version and separately tracked fork version', async () => {
+            const response = await request(app).get('/api/version');
+            const packageJson = require('../../../package.json');
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual({
+                version: packageJson.version,
+                forkVersion: packageJson.forkVersion,
+            });
+        });
+    });
+
     describe('POST /api/login', () => {
         let user;
 

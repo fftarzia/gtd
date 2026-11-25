@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## GTDdo fork releases
+
+For this GTDdo fork, keep the original tududi `package.json` `version` and the separate `forkVersion` independent. **Whenever shipping a new `gtddo:<number>` Docker release, bump `package.json` `forkVersion` to match** so the About page shows the correct `Fork <number>`. See [docs/30-gtddo-fork-version.md](docs/30-gtddo-fork-version.md). Do not change infrastructure `start.md` without explicit owner approval.
+
 ## Tududi - Developer Guide
 
 This documentation is designed for AI assistants and developers working with the tududi codebase. For user-facing documentation, see [README.md](README.md). For contribution guidelines, see [CONTRIBUTING.md](.github/CONTRIBUTING.md).

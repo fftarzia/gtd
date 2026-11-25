@@ -12,6 +12,7 @@ interface AboutProps {
 const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
     const { t } = useTranslation();
     const [version, setVersion] = useState<string>('0.3');
+    const [forkVersion, setForkVersion] = useState<string | null>(null);
     // The page is about the open source project and its donations, which
     // is not what a hosted account is paying for, so hosted sends it home.
     const [hosted, setHosted] = useState(false);
@@ -27,6 +28,9 @@ const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
             .then((data) => {
                 if (data.version) {
                     setVersion(data.version);
+                }
+                if (data.forkVersion) {
+                    setForkVersion(data.forkVersion);
                 }
             })
             .catch((error) => {
@@ -63,6 +67,11 @@ const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
                         <p className="text-lg text-gray-600 dark:text-gray-400">
                             {t('about.version', 'Version')} {version}
                         </p>
+                        {forkVersion && (
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Fork {forkVersion}
+                            </p>
+                        )}
                     </div>
 
                     {/* Description */}
