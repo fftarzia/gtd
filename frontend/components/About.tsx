@@ -4,6 +4,7 @@ import { HeartIcon } from '@heroicons/react/24/outline';
 import { Navigate } from 'react-router-dom';
 import { getApiPath } from '../config/paths';
 import { getFeatureFlags } from '../utils/featureFlags';
+import { FORK_VERSION } from '../config/forkVersion';
 
 interface AboutProps {
     isDarkMode?: boolean;
@@ -11,7 +12,7 @@ interface AboutProps {
 
 const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
     const { t } = useTranslation();
-    const [version, setVersion] = useState<string>('0.3');
+    const [version, setVersion] = useState<string>('2.1.1');
     // The page is about the open source project and its donations, which
     // is not what a hosted account is paying for, so hosted sends it home.
     const [hosted, setHosted] = useState(false);
@@ -62,6 +63,9 @@ const About: React.FC<AboutProps> = ({ isDarkMode = false }) => {
                         </div>
                         <p className="text-lg text-gray-600 dark:text-gray-400">
                             {t('about.version', 'Version')} {version}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Fork {FORK_VERSION}
                         </p>
                     </div>
 
